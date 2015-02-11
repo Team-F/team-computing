@@ -1,0 +1,66 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:	Robot runs in a large Square using PID
+Authors:				Seamus de Cleir and Dylan Crosbie
+Date:					28/01/15
+---------------------------------------------------------------------------------------------------------*/
+
+task main(){
+	//First Turn
+	nMotorPIDSpeedCtrl[motorA] = mtrSpeedReg;
+	nMotorPIDSpeedCtrl[motorC] = mtrSpeedReg;		//Makes the NXT brick output the same proportional power as a percentage to both motors
+
+	motor[motorA] = 50;								//Motor A and B will run together to move the robot forward
+	motor[motorC] = 50;
+	wait1Msec(2000);								//Moves forward for 1 second
+
+	motor[motorA] = 0;
+	motor[motorC] = 0;								//Robot will stop to allow it to begin turning
+	wait1Msec(1000);
+
+	motor[motorC] = 50;								//One motor runs to allow the robot to turn for .4 seconds
+	wait1Msec(800);
+
+	motor[motorA] = 0;								//Robot stops to allow it to start moving again
+	motor[motorC] = 0;
+	wait1Msec(1000);
+
+	//Second Turn
+	motor[motorA] = 50;
+	motor[motorC] = 50;
+	wait1Msec(2000);
+
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(1000);
+
+	motor[motorC] = 50;
+	wait1Msec(800);
+
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(1000);
+
+	//Third Turn
+	motor[motorA] = 50;
+	motor[motorC] = 50;
+	wait1Msec(2000);
+
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(1000);
+
+	motor[motorC] = 50;
+	wait1Msec(800);
+
+	//Last Stretch
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(2000);
+
+	motor[motorA] = 50;
+	motor[motorC] = 50;
+	wait1Msec(1000);
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+
+}//End of Main
