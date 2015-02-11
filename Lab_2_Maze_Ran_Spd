@@ -1,40 +1,40 @@
 /*----------------------------------------------------------------------------------------------------------
-Program Description:	Moves the Robot from point 1 to point 2 or point 3 randomly using PID and synced
-						motors. The Robot moves at a random speed (Question 10, Lab 2)
+Program Description:			Moves the Robot from point 1 to point 2 or point 3 randomly using PID and synced
+					motors. The Robot moves at a random speed (Question 10, Lab 2)
 Authors:				Seamus de Cleir and Dylan Crosbie
 Date:					28/01/15
 ---------------------------------------------------------------------------------------------------------*/
 
 task main(){
 	
-	nMotorPIDSpeedCtrl[motorA] = mtrSpeedReg;			//Makes the NXT brick output the same proportional power as a percentage to both motors
+	nMotorPIDSpeedCtrl[motorA] = mtrSpeedReg;		//Makes the NXT brick output the same proportional power as a percentage to both motors
 	nMotorPIDSpeedCtrl[motorC] = mtrSpeedReg;
 	
 	//Declarations Area
-	int min = 1;										//Creates int variable 'min' and set it to 1
-	int max = 100;										//Creates int variable 'max' and set it to 100
+	int min = 1;				//Creates int variable 'min' and set it to 1
+	int max = 100;				//Creates int variable 'max' and set it to 100
 
 	int masterMotor = (rand() % (max - min)) + min;		//Creates an int called rightMotor that is set to a random value between 1 and 100
-	int speedMotor = masterMotor*0.000216;				//Calculates the speed the Robot is moving at in miliseconds
+	int speedMotor = masterMotor*0.000216;			//Calculates the speed the Robot is moving at in miliseconds
 	// 1st Straight
-	nSyncedMotors = synchAC;							//Syncs the Motors A and C. A is the master and C is the slave.
-	nSyncedTurnRatio = 100;								//Sets the slave C to copy the master A at 100%
+	nSyncedMotors = synchAC;		//Syncs the Motors A and C. A is the master and C is the slave.
+	nSyncedTurnRatio = 100;			//Sets the slave C to copy the master A at 100%
 
-	motor[motorA] = masterMotor;						//Sets motor A to random power making both A an C move the robot in a straight line.
-	wait1Msec(27 / speedMotor);							//Moves the robot forward for an amount of time
+	motor[motorA] = masterMotor;		//Sets motor A to random power making both A an C move the robot in a straight line.
+	wait1Msec(27 / speedMotor);		//Moves the robot forward for an amount of time
 
-	motor[motorA] = 0;									//Sets motor A to zero. This stops the robot
-	wait1Msec(300);										//Stops for 0.3 of a second
+	motor[motorA] = 0;		//Sets motor A to zero. This stops the robot
+	wait1Msec(300);			//Stops for 0.3 of a second
 
 	// 1st Turn
 	nSyncedMotors = synchAC;
-	nSyncedTurnRatio = -100;							//Makes the slave C do the opposite of the master A. This turns the robot
+	nSyncedTurnRatio = -100;	//Makes the slave C do the opposite of the master A. This turns the robot
 
-	motor[motorA] = 50;									//Sets motor A to 50% power making A an C move in different directions.
-	wait1Msec(370);										//Turns the robot for 0.37 of a second
+	motor[motorA] = 50;		//Sets motor A to 50% power making A an C move in different directions.
+	wait1Msec(370);			//Turns the robot for 0.37 of a second
 
-	motor[motorA] = 0;									//Sets motor A to zero. This stops the robot
-	wait1Msec(300);										//Stops for 0.3 of a second
+	motor[motorA] = 0;		//Sets motor A to zero. This stops the robot
+	wait1Msec(300);			//Stops for 0.3 of a second
 
 	// 2nd Straight
 	nSyncedMotors = synchAC;
