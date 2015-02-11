@@ -1,0 +1,15 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:	Robot runs in a large circle using PID so both motors receive the same power.
+Authors:				Seamus de Cleir and Dylan Crosbie
+Date:					28/01/15
+---------------------------------------------------------------------------------------------------------*/
+
+task main() {
+	nMotorPIDSpeedCtrl[motorA] = mtrSpeedReg;		//Makes the NXT brick output the same proportional power as a percentage to both motors
+	nMotorPIDSpeedCtrl[motorC] = mtrSpeedReg;
+
+	motor[motorC] = 100;							//motorC will run faser than motorA causing it to turn to its right
+	motor[motorA] = 50;
+	wait1Msec(9000);								//the robot will continue to turn for 9 seconds
+
+}//End of Main
