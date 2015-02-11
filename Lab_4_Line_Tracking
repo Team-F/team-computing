@@ -16,29 +16,29 @@ int lightThreshold(int, int);
 task main()
 {
 	//Declarations
-	int thresh = lightThreshold(60,40);		//Returns the threshold of the light values to a variable called thresh
+	int thresh = lightThreshold(60,40);			//Returns the threshold of the light values to a variable called thresh
 
 	//Code Body
-	lineTrack(thresh);				//Starts the line tracking function
-
+	while(1 == 1){
+		lineTrack(thresh);				//Starts the line tracking function
+	}
 }//End of main
 
 //lineTrack Function
 void lineTrack(int threshold){
-	while (1 == 1)					//Tracks the black line by moving over and back until it is detected
-	{
 
-		while (SensorValue(lightSensor) <= threshold)
-		{
-			motor[leftMotor] = 25;
-			motor[rightMotor] = 0;
-		}
-		while (SensorValue(lightSensor) >= threshold)
-		{
-			motor[leftMotor] = 0;
-			motor[rightMotor] = 25;
-		}
-	}
+	while (SensorValue(lightSensor) <= threshold)		//Tracks the black line by moving over and back until it is detected
+	{
+		motor[leftMotor] = 25;
+		motor[rightMotor] = 0;
+	}//End of While
+
+	while (SensorValue(lightSensor) >= threshold)
+	{
+		motor[leftMotor] = 0;
+		motor[rightMotor] = 25;
+	}//End of while
+
 }//End of lineTrack
 
 //lightThreshold function
