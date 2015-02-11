@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------------------------------------------
 Program Description:			Robot moves forward tracking a black line until its sonar sensor is activated
-								it then moves around the object and continues on its way
-Author:							Seamus de Cleir and Dylan Crosbie
-Date:							11/02/2015
+					it then moves around the object and continues on its way
+Author:					Seamus de Cleir and Dylan Crosbie
+Date:					11/02/2015
 -------------------------------------------------------------------------------------------------------------*/
 #pragma config(Sensor, S2,     lightSensor,    sensorLightActive)
 #pragma config(Sensor, S4,     sonarSensor,    sensorSONAR)
@@ -31,15 +31,15 @@ task main()
 
 	motorControl(reverse, stop, 370);		//Turns Robot
 
-	motorControl(stop, stop, 100);		//Stops robot
+	motorControl(stop, stop, 100);			//Stops robot
 
 	motorControl(forward, forward, 1200);		//Moves robot forward for 1200ms
 
-	motorControl(stop, stop, 100);		//Stops robot
+	motorControl(stop, stop, 100);			//Stops robot
 
 	motorControl(stop, reverse, 700);		//Turns Robot
 	
-	motorControl(stop, stop, 100);		//Stops robot
+	motorControl(stop, stop, 100);			//Stops robot
 
 	motorControl(forward, forward, 2500);		//Moves Robot forward for 2500ms. Back on to the line
 
@@ -69,7 +69,7 @@ void lineTrack(int threshold){
 }//End of lineTrack
 
 //lightThreshold function
-int lightThreshold(dark int, light int){					//Calculates the light threshold
+int lightThreshold(dark int, light int){	//Calculates the light threshold
 	//Declarations
 	int t = o;
 
@@ -79,7 +79,7 @@ int lightThreshold(dark int, light int){					//Calculates the light threshold
 
 //motorControl Function
 void motorControl(int left, int right, int t){
-	motor[leftMotor] = left;								//Sets both motors to variable speed with a wait time of variable t
+	motor[leftMotor] = left;		//Sets both motors to variable speed with a wait time of variable t
 	motor[rightMotor] = right;
 	wait1Msec(t);
 }//End of motorControl
