@@ -1,0 +1,17 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:	Robot runs straight line. The motor are in sync so only the master motor needs to be
+						set.
+Authors:				Seamus de Cleir and Dylan Crosbie
+Date:					28/01/15
+---------------------------------------------------------------------------------------------------------*/
+
+task main(){
+  nSyncedMotors = synchAC;			//Syncs the Motors A and C. A is the master and C is the slave.
+  nSyncedTurnRatio = 100;			//Sets the slave C to copy the master A at 100%
+
+  motor[motorA] = 50;				//Sets motor A to 50% power making both A an C move the robot in a straight line.
+
+  wait1Msec(30000);					//Continutes the power for 30 seconds
+}//End of Main
+
+
