@@ -1,0 +1,13 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:	      Robot runs in a large circle
+Authors:                    Seamus de Cleir and Dylan Crosbie
+Date:					              21/01/15
+---------------------------------------------------------------------------------------------------------*/
+
+task main() {
+
+	motor[motorC] = 100;			//motorC will run faser than motorA causing it to turn to its right
+	motor[motorA] = 50;
+	wait1Msec(9000);				//the robot will continue to turn for 9 seconds
+
+}//End of Main
