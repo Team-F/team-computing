@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 Program Description:			Robot moves forward tracking a black line
-Author:							Seamus de Cleir and Dylan Crosbie
-Date:							11/02/2015
+Author:					Seamus de Cleir and Dylan Crosbie
+Date:					11/02/2015
 ---------------------------------------------------------------------------------------------*/
 
 #pragma config(Sensor, S2,     lightSensor,    sensorLightActive)
@@ -16,16 +16,16 @@ int lightThreshold(int, int);
 task main()
 {
 	//Declarations
-	int thresh = lightThreshold(60,40);							//Returns the threshold of the light values to a variable called thresh
+	int thresh = lightThreshold(60,40);		//Returns the threshold of the light values to a variable called thresh
 
 	//Code Body
-	lineTrack(thresh);											//Starts the line tracking function
+	lineTrack(thresh);				//Starts the line tracking function
 
 }//End of main
 
 //lineTrack Function
 void lineTrack(int threshold){
-	while (1 == 1)												//Tracks the black line by moving over and back until it is detected
+	while (1 == 1)					//Tracks the black line by moving over and back until it is detected
 	{
 
 		while (SensorValue(lightSensor) <= threshold)
@@ -42,7 +42,7 @@ void lineTrack(int threshold){
 }//End of lineTrack
 
 //lightThreshold function
-int lightThreshold(dark int, light int){						//Calculates the light threshold
+int lightThreshold(dark int, light int){		//Calculates the light threshold
 	//Declarations
 	int t = o;
 
