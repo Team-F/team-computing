@@ -1,0 +1,71 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:	Function for RobotC
+Authors:				Seamus de Cleir and Dylan Crosbie
+Date:					11/02/15
+---------------------------------------------------------------------------------------------------------*/
+
+//motorControl Function
+void motorControl(int left, int right, int t){
+	motor[leftMotor] = left;								//Sets both motors to variable speed with a wait time of variable t
+	motor[rightMotor] = right;
+	wait1Msec(t);
+}//End of motorControl
+
+//lightThreshold function
+int lightThreshold(dark int, light int){					//Calculates the light threshold
+	//Declarations
+	int t = o;
+
+	//Code Body
+	t = (dark + light) / 2;
+}//End of lightThreshold
+
+//lineTrack Function
+void lineTrack(int threshold){								//Tracks the black line by moving over and back until it is detected
+
+	while (SensorValue(lightSensor) <= threshold)
+	{
+		motor[leftMotor] = 25;
+		motor[rightMotor] = 0;
+	}//End of While
+
+	while (SensorValue(lightSensor) >= threshold)
+	{
+		motor[leftMotor] = 0;
+		motor[rightMotor] = 25;
+	}//End of while
+
+}//End of lineTrack
+
+//rightTurn Function
+void rightTurn(){
+	nMotorEncoder[leftMotor] = 0;						//Sets the distance calculator to zero
+
+	while (nMotorEncoder[leftMoter] > -300){			//This while loop continues until the motor A has gone a -300 revolution 
+		motor[motorA] = -50;						//Moves motor A at -50%, turning the robot
+	}//End of while
+}//End of rightTurn
+
+//leftTurn Function
+void leftTurn(){
+	nMotorEncoder[rightMotor] = 0;						//Sets the distance calculator to zero
+
+	while (nMotorEncoder[rightMoter] > -300){			//This while loop continues until the motor A has gone a -300 revolution 
+		motor[motorA] = -50;						//Moves motor A at -50%, turning the robot
+	}//End of while
+}//End of leftTurn
+
+//moveDistance
+void moveDistance(int dis, int spd){
+	nMotorEncoder[motorA] = 0;						//Resets both motors distance calculators
+	nMotorEncoder[motorC] = 0;
+
+	nMotorEncoderTarget[motorA] = dis;				//Sets the target of two turns for both motors
+	nMotorEncoderTarget[motorC] = dis;
+
+	motor[leftMotor] = spd;						//Sets the power to a random number for both motors
+	motor[rightMotor] = spd;
+
+	while (nMotorRunState[motorC] != runStateIdle)	//Moves the robot forward the target amount specified
+	{}//End of while
+}//End of moveDistance
