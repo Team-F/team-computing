@@ -14,8 +14,8 @@ task main()
 	ClearTimer(T1);
 	while (time1[T1] <10000)
 	{
-		motor[motorA] = SensorValue(soundSensor);	//Sets the motors speed to the noise level
-		motor[motorC] = SensorValue(soundSensor);
+		motor[leftMotor] = SensorValue(soundSensor);	//Sets the motors speed to the noise level
+		motor[rightMotor] = SensorValue(soundSensor);
 	}//End of while
 
 }//End of main
