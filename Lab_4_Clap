@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 Program Description:			Robot moves forward until it hears a clap
-Author:							Seamus de Cleir and Dylan Crosbie
-Date:							11/02/2015
+Author:					Seamus de Cleir and Dylan Crosbie
+Date:					11/02/2015
 ---------------------------------------------------------------------------------------------*/
 #pragma config(Sensor, S4,     soundSensor,    sensorSoundDB)
 #pragma config(Motor,  motorA,          leftMotor,     tmotorNXT, PIDControl, encoder)
@@ -16,12 +16,12 @@ task main()
 	ClearTimer(T1);
 	while (time1[T1] <10000)
 	{
-		if (sensorValue(soundSensor) > 90)			//If the sound detected is over 90% the motors stop for 2 seconds
+		if (sensorValue(soundSensor) > 90)	//If the sound detected is over 90% the motors stop for 2 seconds
 		{
 
 			motorControl(0, 2000);
 		}
-		else										//The motors moves forward if the sound is not detected
+		else					//The motors moves forward if the sound is not detected
 		{
 			motorControl(50, 0);
 
@@ -33,7 +33,7 @@ task main()
 
 //motorControl Function
 void motorControl(int speed, int t){
-	motor[motorA] = speed;								//Sets both motors to variable speed with a wait time of variable t
+	motor[motorA] = speed;			//Sets both motors to variable speed with a wait time of variable t
 	motor[motorC] = speed;
 	wait1Msec(t);
 }//End of motorControl
