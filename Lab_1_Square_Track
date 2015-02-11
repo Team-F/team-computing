@@ -1,0 +1,63 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:	Robot runs in a large Square
+Authors:				      Seamus de Cleir and Dylan Crosbie
+Date:					        21/01/15
+---------------------------------------------------------------------------------------------------------*/
+
+task main(){
+	//First Turn
+	motor[motorA] = 100;			//Motor A and B will run together to move the robot forward
+	motor[motorC] = 100;
+	wait1Msec(1000);				  //Moves forward for 1 second
+	
+	motor[motorA] = 0;
+	motor[motorC] = 0;				//Robot will stop to allow it to begin turning
+	wait1Msec(1000);
+	
+	motor[motorC] = 100;			//One motor runs to allow the robot to turn for .4 seconds
+	wait1Msec(400);
+	
+	motor[motorA] = 0;				//Robot stops to allow it to start moving again
+	motor[motorC] = 0;
+	wait1Msec(1000);
+
+	//Second Turn
+	motor[motorA] = 100;
+	motor[motorC] = 100;
+	wait1Msec(1000);
+	 
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(1000);
+	 
+	motor[motorC] = 100;
+	wait1Msec(400);
+
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(1000);
+
+	//Third Turn
+	motor[motorA] = 100;
+	motor[motorC] = 100;
+	wait1Msec(1000);
+	
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(1000);
+	
+	motor[motorC] = 100;
+	wait1Msec(400);
+
+	//Last Stretch
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+	wait1Msec(1000);
+
+	motor[motorA] = 100;
+	motor[motorC] = 100;
+	wait1Msec(1000);
+	motor[motorA] = 0;
+	motor[motorC] = 0;
+
+}//End of Main
