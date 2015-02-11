@@ -43,7 +43,7 @@ void lineTrack(int threshold){
 		motor[rightMotor] = 25;
 	}//End of while
 
-}//End of while
+}//End of lineTrack
 
 //lightThreshold function
 int lightThreshold(dark int, light int){		//Calculates the light threshold
