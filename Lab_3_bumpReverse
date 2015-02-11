@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------------------------
 Program Description:			When the robot's touch sensor is activated the robot reverses
-Author:							Seamus de Cleir and Dylan Crosbie
-Date:							04/02/2015
+Author:					Seamus de Cleir and Dylan Crosbie
+Date:					04/02/2015
 -------------------------------------------------------------------------------------------*/
 
 #pragma config(Sensor, S1,     touchSensor,    sensorTouch)
@@ -13,21 +13,21 @@ Date:							04/02/2015
 task main()
 {
 	//Declarations
-	int speed = 50;									//Declares an integer called speed that is the power of the forward motion
-	int reverse = -50;								//Declares an integer called reverse that is the power of the backward motion
+	int speed = 50;		//Declares an integer called speed that is the power of the forward motion
+	int reverse = -50;	//Declares an integer called reverse that is the power of the backward motion
 
 	//Code Body
 	while (SensorValue(touchSensor) == 0){			//While the touch sensor is not activated the robot moves forward
-				motor[leftMotor] = speed;			//Setting the motors to speed makes them revolve at a power of 50%
+				motor[leftMotor] = speed;	//Setting the motors to speed makes them revolve at a power of 50%
 				motor[rightMotor] = speed;
 	}//End of while
 
-	motor[leftMotor] = 0;							//When the touch sensor is activated the motors are set to 0 stopping the robot
+	motor[leftMotor] = 0;		//When the touch sensor is activated the motors are set to 0 stopping the robot
 	motor[rightMotor] = 0;
 
-	motor[leftMotor] = reverse;						//The robot then reverses at a power of 50%
+	motor[leftMotor] = reverse;	//The robot then reverses at a power of 50%
 	motor[rightMotor] = reverse;
 
-	wait1Msec(1000);								//The reverse motion continues for 1 second
+	wait1Msec(1000);		//The reverse motion continues for 1 second
 
 }//End of main
