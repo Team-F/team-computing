@@ -1,0 +1,17 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:	Robot runs straight for two meters using PID.
+Authors:				Seamus de Cleir and Dylan Crosbie
+Date:					28/01/15
+---------------------------------------------------------------------------------------------------------*/
+
+task main(){
+  nMotorPIDSpeedCtrl[motorA] = mtrSpeedReg;			//Makes the NXT brick output the same proportional power as a percentage to both motors
+  nMotorPIDSpeedCtrl[motorC] = mtrSpeedReg;
+
+  motor[motorA] = 50;								//Motor A receives 50% power causing the robot to move forward
+  motor[motorC] = 50;								//Motor C receives 50% power causing the robot to move forward
+
+  wait1Msec(30000);									//The robot continues to move forward for 30 seconds
+}//End of Main
+
+
