@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 Program Description:			Robot moves forward at the same speed  as the noise it detects
-Author:							Seamus de Cleir and Dylan Crosbie
-Date:							11/02/2015
+Author:					Seamus de Cleir and Dylan Crosbie
+Date:					11/02/2015
 ---------------------------------------------------------------------------------------------*/
 #pragma config(Sensor, S4,     soundSensor,    sensorSoundDB)
 #pragma config(Motor,  motorA,          leftMotor,     tmotorNXT, PIDControl, encoder)
