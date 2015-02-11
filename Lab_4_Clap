@@ -33,7 +33,7 @@ task main()
 
 //motorControl Function
 void motorControl(int speed, int t){
-	motor[motorA] = speed;			//Sets both motors to variable speed with a wait time of variable t
-	motor[motorC] = speed;
+	motor[leftMotor] = speed;			//Sets both motors to variable speed with a wait time of variable t
+	motor[rightMotor] = speed;
 	wait1Msec(t);
 }//End of motorControl
