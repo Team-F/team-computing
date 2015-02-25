@@ -118,16 +118,57 @@ int MoveRobot (int wheelRatio, int distance)
 		}
 		else
 		{	
-			motor[rightMotor] = SensorValue(soundSensor)/2;
+			motor[rightMotor] = SensorValue(soundSensor);
 			
 			nxtDisplayCenteredBigTextLine(3, "%d" ,SensorValue(soundSensor) );
 		}
 	}
 	return 0;
 }
+
+
+
+int findTreshold(int dark, int light) //Calculates the light threshold
+{
+	int t = 0;
+
+	t = (dark + light) / 2;
+
+	return t;
+
+}//End of lightThreshold
+
+void followLines(int lines)
+{
+	int countValue = 0;
+	int lastSeen;
+
+	nxtDisplayCenteredBigTextLine(3, "%d" ,countValue );
+	ClearTimer(T1);
+	lastSeen= 1;
+
+	while(lines!=countValue)
+		{
+			motor[leftMotor]=50;
+			motor[rightMotor]=50;
+			if(SensorValue(lightSensor) < 50)
+				{
+					
+					if (lastSeen == 1)
+						{
+							PlayTone(695, 14);
+							countValue=countValue+ 1;
+							lastSeen= 0;
+							nxtDisplayCenteredBigTextLine(3, "%d" ,countValue );
+							}
+							}
+					else
+						{
+							lastSeen= 1;
+						}
+			}
 		
-	
-	
+}
 		
 		
 	
