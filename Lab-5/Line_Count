@@ -33,11 +33,11 @@ task main()
 				countValue=countValue+ 1;
 				lastSeen= 0;
 				nxtDisplayCenteredBigTextLine(3, "%d" ,countValue );
-			}
+			}//End of if
 		}else{
 			lastSeen= 1;
-		}
-	}
+		}//End of if
+	}//End of while
 
 
-}//End of if
+}//End of main
