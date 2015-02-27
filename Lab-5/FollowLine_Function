@@ -1,3 +1,8 @@
+/*-------------------------------------------------------------------------------------------------------------
+Program Description:		Returns 1 if stopped. 0 if not
+Author:				Seamus de Cleir and Dylan Crosbie
+Date:				25/02/2015
+-------------------------------------------------------------------------------------------------------------*/
 #pragma config(Sensor, S1,     touchSensor,    sensorTouch)
 #pragma config(Sensor, S2,     soundSensor,    sensorSoundDB)
 #pragma config(Sensor, S3,     lightSensor,    sensorLightActive)
@@ -13,9 +18,9 @@ task main()
 	
 	int value = 0;
 	
-	value=followLine(20, 25);
+	value  =followLine(20, 25);		//followLine function returns value to variable value
 	
-	nxtDisplayCenteredBigTextLine(3, "%d" ,value );
+	nxtDisplayCenteredBigTextLine(3, "%d" ,value );		//Displays 1 or 0
 	
 	wait1Msec(10000);
 	
