@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------------------------------------------
-Program Description:			Follow the line and use the ultrasonic sensor to detect an object, then go around it 
-                          in an arch and find the line again.
-Author:					          Seamus de Cleir and Dylan Crosbie
-Date:					            19/02/2015
+Program Description:	Follow the line and use the ultrasonic sensor to detect an object, then go around it 
+                        in an arch and find the line again.
+Author:			Seamus de Cleir and Dylan Crosbie
+Date:			19/02/2015
 -------------------------------------------------------------------------------------------------------------*/
 #pragma config(Sensor, S3,     lightSensor,    sensorLightActive)
 #pragma config(Sensor, S4,     sonarSensor,    sensorSONAR)
@@ -25,7 +25,7 @@ task main()
 
 			}//End of while
 
-			lineTrack(50);                  //Tracks line
+		lineTrack(50);                  //Tracks line
 
 
 	}
