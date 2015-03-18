@@ -1,0 +1,233 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:			Function for RobotC
+Authors:									Seamus de Cleir and Dylan Crosbie
+Date:											11/02/15
+---------------------------------------------------------------------------------------------------------*/
+
+//GLOBAL VARIABLES grid world dimensions
+const int Xsize = 11;
+const int Ysize = 9;
+
+//GLOBAL ARRAY representation of grid world using a 2-Dimensional array
+//10  = Off the table
+//0  = Unexplored
+//1  = Clear Path
+//2	 = Object
+//3	 = Obstacle
+//99 = robot
+
+int map[Xsize][Ysize] =
+ {{10,10,10,10,10,10,10,10,10},
+  {10,0,0,0,99,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,0,0,0,0,0,0,0,10},
+  {10,10,10,10,10,10,10,10,10}};
+
+  
+  
+//lightThreshold function
+int lightThreshold(int dark, int light){		//Calculates the light threshold
+	//Declarations
+	int t = 0;
+
+	//Code Body
+	t = (dark + light) / 2;
+	return t;
+}//End of lightThreshold
+
+
+//rightTurn Function
+void rightTurn(){
+	nMotorEncoder[leftMotor] = 0;				//Sets the distance calculator to zero
+
+	while (nMotorEncoder[rightMotor] > -300){		//This while loop continues until the motor A has gone a -300 revolution
+		motor[rightMotor] = -50;				//Moves motor A at -50%, turning the robot
+	}//End of while
+}//End of rightTurn
+
+//leftTurn Function
+void leftTurn(){
+	nMotorEncoder[leftMotor] = 0;				//Sets the distance calculator to zero
+
+	while (nMotorEncoder[leftMotor] > -300){		//This while loop continues until the motor A has gone a -300 revolution
+		motor[leftMotor] = -50;				//Moves motor A at -50%, turning the robot
+	}//End of while
+}//End of leftTurn
+
+//moveDistance
+void moveDistance(int dis, int spd){
+	nMotorEncoder[rightMotor] = 0;			//Resets both motors distance calculators
+	nMotorEncoder[leftMotor] = 0;
+
+
+	while (nMotorEncoder[rightMotor]<dis && nMotorEncoder[leftMotor]<dis){	//Moves the robot forward the target amount specified
+
+		motor[leftMotor] = spd;				//Sets the power to a random number for both motors
+		motor[rightMotor] = spd;
+	}//End of while
+}//End of moveDistance
+
+
+//forwardLines
+void forwardLines(int lines)
+{
+	int countValue = 0;
+	int lastSeen;
+
+	nxtDisplayCenteredBigTextLine(3, "%d" ,countValue );	//Displays the lines counted
+	ClearTimer(T1);
+	lastSeen= 1;
+
+	while(lines!=countValue){
+
+		motor[leftMotor]=50;
+		motor[rightMotor]=50;
+
+		if(SensorValue(lightSensor) < 50){
+
+			if (lastSeen == 1){
+
+				PlayTone(695, 14);
+				countValue=countValue+ 1;
+				lastSeen= 0;
+				nxtDisplayCenteredBigTextLine(3, "%d" ,countValue );
+			}//End of if
+
+		}else{
+			lastSeen= 1;
+		}//End of if
+
+	}//End of while
+
+}//End of forwardLines
+
+
+//moveRobot
+int moveRobot (int wheelRatio, int distance)
+{
+	distance = distance * 36;
+
+	nSyncedMotors = synchBC; //Syncs the Motors A and C. A is the master and C is the slave.
+	nSyncedTurnRatio = wheelRatio; //Sets the slave C to copy the master A at 100%
+	nMotorEncoder[rightMotor] = 0;
+
+	while (nMotorEncoder[rightMotor] < distance){
+		if(SensorValue(touchSensor)== 1){
+			return 1;
+		}else{
+			motor[rightMotor] = SensorValue(soundSensor);
+			nxtDisplayCenteredBigTextLine(3, "%d" ,SensorValue(soundSensor) );
+		}//End of if
+	}//End of while
+	return 0;
+}//End of moveRobot
+
+//moveForward
+void moveForward(int blocks)
+{
+  int countsToTravel = (23.7/17.6)*(360)*blocks;
+
+  //encoder target for countsToTravel
+  nMotorEncoder[rightMotor] = 0;
+  nMotorEncoder[leftMotor] = 0;
+  nMotorEncoderTarget[rightMotor] = countsToTravel;
+  nMotorEncoderTarget[leftMotor] = countsToTravel;
+  motor[rightMotor] = 50;
+  motor[leftMotor] = 50;
+  while(nMotorRunState[rightMotor] != runStateIdle && nMotorRunState[leftMotor] != runStateIdle) {}
+
+  //stop for half second at end of movement
+  motor[rightMotor] = 0;
+  motor[leftMotor] = 0;
+  wait1Msec(500);
+}
+
+//Navigate
+void Navigate()
+{
+  //Robots Current Position
+  int robotX, robotY;
+
+  //Finds Robots current position
+  for(int x=0; x < Xsize; x++)
+  {
+    for(int y=0; y < Ysize; y++)
+    {
+      if(map[x][y] == 99)
+      {
+        robotX = x;
+        robotY = y;
+      }
+    }
+  }
+  
+  //Picks next path
+  int currentX = robotX;
+  int currentY = robotY;
+  int currentFacing = 0;
+  int nextDirection = 0;
+  int objectsFound = 0;
+
+  while(objectsFound != 2)
+  {
+    nextDirection = currentFacing;
+    int nextX = 0;
+    int nextY = 0;
+
+    //Checks for free blocks
+    if(map[currentX][currentY-1] == 0) //Is South space unchecked (0 = South)
+    {
+      nextX = currentX;
+      nextY = currentY+1;
+      nextDirection = 0;
+    }
+    else if(map[currentX-1][currentY] == 0)	//Is East space unchecked (1 = East)
+    {
+    	nextX = currentX-1;
+      nextY = currentY;
+      nextDirection = 1;
+    }
+    else if(map[currentX][currentY+1] == 0)	//Is North space unchecked (2 = North)
+    {
+    	nextX = currentX;
+      nextY = currentY+1;
+      nextDirection = 2;
+    }
+    else if(map[currentX+1][currentY] == 0)	//Is West space unchecked (3 = West)
+    {
+    	nextX = currentX+1;
+      nextY = currentY;
+      nextDirection = 3;
+    }
+    
+    //Updates current location 
+    currentX = nextX;
+    currentY = nextY;
+    map[currentX][currentY] = 1;
+    
+    //Finds the direction the robot should be facing
+    while(currentFacing != nextDirection)
+    {
+      if (currentFacing > nextDirection)
+      {
+        leftTurn();
+        currentFacing--;
+      }
+      else if(currentFacing < nextDirection)
+      {
+      	rightTurn();
+        currentFacing++;
+      }//End of if
+    }//End of while
+    
+    //Moves the Robot forward one block
+    moveForward(1);
+    
+    }
+}
