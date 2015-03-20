@@ -9,25 +9,25 @@ const int Xsize = 11;
 const int Ysize = 9;
 
 //GLOBAL ARRAY representation of grid world using a 2-Dimensional array
-//100  = Off the table
+//1000  = Off the table
 //0  = Unexplored
 //Numbered  = Clear Path
-//80	 = Object
-//90	 = Obstacle
-//99 = Start
+//800	 = Object
+//900	 = Obstacle
+//999 = Start
 
 int map[Xsize][Ysize] =
- {{100,100,100,100,100,100,100,100,100},
-  {100,0,0,0,99,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,0,0,0,0,0,0,0,100},
-  {100,100,100,100,100,100,100,100,100}};
+ {{1000,1000,1000,1000,1000,1000,1000,1000,1000},
+  {1000,0,0,0,999,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,0,0,0,0,0,0,0,1000},
+  {1000,1000,1000,1000,1000,1000,1000,1000,1000}};
 
 
 
@@ -139,17 +139,17 @@ void PrintWavefrontMap()
     string printRow = "";
     for(int x=0; x < Xsize; x++)
     {
-      if(map[x][y] == 99)
+      if(map[x][y] == 999)
         printRow = printRow + "S ";
       else if(map[x][y] == 0)
         printRow = printRow + "U ";
-      //else if(map[x][y] > 0 && map[x][y] < 80)
-        //printRow = printRow + "C ";
-      else if(map[x][y] == 90)
+      else if(map[x][y] > 0 && map[x][y] < 800)
+        printRow = printRow + "C ";
+      else if(map[x][y] == 900)
       	printRow = printRow + "O ";
-      else if(map[x][y] == 80)
+      else if(map[x][y] == 800)
       	printRow = printRow + "G ";
-      else if(map[x][y] == 100)
+      else if(map[x][y] == 1000)
         printRow = printRow + "";
       else
         printRow = printRow + map[x][y];
@@ -170,7 +170,7 @@ void Navigate()
   {
     for(int y=0; y < Ysize; y++)
     {
-      if(map[x][y] == 99)
+      if(map[x][y] == 999)
       {
         robotX = x;
         robotY = y;
@@ -185,7 +185,7 @@ void Navigate()
   int nextDirection = 0;
   int objectsFound = 0;
   int mine;
-  int numbered = 0;
+  int numbered = 1;
   int smallest;
 
   while(objectsFound != 2)
@@ -198,16 +198,16 @@ void Navigate()
     //If an object is sensed that the map records it as a 2(object)
 		if(SensorValue(sonarSensor) < 30 && SensorValue(sonarSensor) > 10){
 			if(currentFacing == 0){
-				map[currentX][currentY-1] = 80;	//Sensed when facing South
+				map[currentX][currentY-1] = 800;	//Sensed when facing South
 			}
 			else if(currentFacing == 1){
-				map[currentX+1][currentY] = 80;	//Sensed when facing West
+				map[currentX+1][currentY] = 800;	//Sensed when facing West
 			}
 			else if(currentFacing == 2){
-				map[currentX][currentY+1] = 80;	//Sensed when facing North
+				map[currentX][currentY+1] = 800;	//Sensed when facing North
 			}
 			else{
-				map[currentX-1][currentY] = 80;	//Sensed when facing East
+				map[currentX-1][currentY] = 800;	//Sensed when facing East
 			}
 			objectsFound++;
 		}
@@ -289,7 +289,7 @@ void Navigate()
     mine = moveForward(1);
 
     if(mine == 1){
-			map[nextX][nextY] = 90;
+			map[nextX][nextY] = 900;
 		}else{
 			//Updates current location
 	    currentX = nextX;
