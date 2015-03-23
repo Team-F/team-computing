@@ -41,11 +41,11 @@ int lightThreshold(int dark, int light){		//Calculates the light threshold
 
 
 //rightTurn Function
-void rightTurn(){
+void rightTurn(int turn){
 	nMotorEncoder[rightMotor] = 0;				//Sets the distance calculator to zero
 	nMotorEncoder[leftMotor] = 0;
 
-	while (nMotorEncoder[leftMotor] < 188 && nMotorEncoder[rightMotor] > -188){		//This while loop continues until the motor A has gone a -300 revolution
+	while (nMotorEncoder[leftMotor] < turn && nMotorEncoder[rightMotor] > -(turn)){		//This while loop continues until the motor A has gone a -300 revolution
 		motor[rightMotor] = -25;				//Moves motor A at -50%, turning the robot
 		motor[leftMotor] = 25;
 
@@ -58,11 +58,11 @@ void rightTurn(){
 }//End of rightTurn
 
 //leftTurn Function
-void leftTurn(){
+void leftTurn(int turn){
 	nMotorEncoder[rightMotor] = 0;				//Sets the distance calculator to zero
 	nMotorEncoder[leftMotor] = 0;
 
-	while (nMotorEncoder[rightMotor] < 188 && nMotorEncoder[leftMotor] > -188){		//This while loop continues until the motor A has gone a -300 revolution
+	while (nMotorEncoder[rightMotor] < turn && nMotorEncoder[leftMotor] > -(turn)){		//This while loop continues until the motor A has gone a -300 revolution
 		motor[rightMotor] = 25;				//Moves motor A at -50%, turning the robot
 		motor[leftMotor] = -25;
 
@@ -77,28 +77,28 @@ void leftTurn(){
 //move
 void move(int block)
 {
-	int count = (23.7/13)*(360)*block;
+	int count = 656*block;
 	nMotorEncoder[rightMotor] = 0;			//Resets both motors distance calculators
 	nMotorEncoder[leftMotor] = 0;
-	
+
 	//encoder target for countsToTravel
   while (nMotorEncoder[rightMotor]<count&& nMotorEncoder[leftMotor]<count){	//Moves the robot forward the target amount specified
 
 		motor[leftMotor] = 50;				//Sets the power to a random number for both motors
 		motor[rightMotor] = 50;
 	}//End of while
-	
+
 	//stop for half second at end of movement
   motor[rightMotor] = 0;
   motor[leftMotor] = 0;
   //wait1Msec(250);
 }
-	
-	
+
+
 //moveForward
 int moveForward(int blocks)
 {
-  int countsToTravel = ((23.7/13)*(360)*blocks)/2;
+  int countsToTravel = (656.3*blocks)/2;
 
   nMotorEncoder[rightMotor] = 0;			//Resets both motors distance calculators
 	nMotorEncoder[leftMotor] = 0;
@@ -186,13 +186,13 @@ int direction(int current, int next){
     {
       if (current < next)
       {
-      	leftTurn();
+      	leftTurn(188);
         current++;
 
       }
       else if(current > next)
       {
-      	rightTurn();
+      	rightTurn(188);
         current--;
 
       }//End of if
@@ -247,6 +247,7 @@ int navigate()
   int currentFacing = 0;
   int nextDirection = 0;
   int objectsFound = 0;
+  int objectNow = 0;
   int mine;
   int numbered = 1;
   int smallest;
@@ -262,8 +263,7 @@ int navigate()
     objectsFound = objectSensed(currentFacing, objectsFound, currentX, currentY);
 
     if(objectsFound == 2){
-    		map[currentX][currentY] = 888;
-				return currentFacing;
+    		continue;
 			}//End if
 
 		switch(currentFacing){
@@ -489,11 +489,16 @@ int navigate()
     currentFacing = direction(currentFacing, nextDirection);
 
     //If an object is sensed that the map records it as a 900(Goal)
-    objectsFound = objectSensed(currentFacing, objectsFound, currentX, currentY);
+    objectNow = objectSensed(currentFacing, objectNow, currentX, currentY);
+
+    if(objectNow > 0){
+			objectNow--;
+			continue;
+		}
+
 
     if(objectsFound == 2){
-    		map[currentX][currentY] = 888;
-				return currentFacing;
+    		continue;
 			}
 
     //Moves the Robot forward one block
@@ -521,7 +526,7 @@ int navigate()
 
 
 //Wavefront Algorithm
-void wavefront(int directionFacing)
+int wavefront(int directionFacing)
 {
 	//Declarations
 	int y, x;
@@ -565,8 +570,8 @@ void wavefront(int directionFacing)
 
   while(foundWave == 1){
   	foundWave = 0;
-  	
-  	
+
+
   	for(int y=0; y < Ysize; y++)
     {
       for(int x=0; x < Xsize; x++)
@@ -576,31 +581,31 @@ void wavefront(int directionFacing)
           foundWave = true;
           xStart = x;
           yStart = y;
- 
+
           if(xStart > 0) //This code checks the array bounds heading WEST
             if(map[xStart-1][yStart] == 0)  //This code checks the WEST direction
               map[xStart-1][yStart] = wave + 1;
- 
+
           if(xStart < (Xsize - 1)) //This code checks the array bounds heading EAST
             if(map[xStart+1][yStart] == 0)//This code checks the EAST direction
               map[xStart+1][yStart] = wave + 1;
- 
+
           if(yStart > 0)//This code checks the array bounds heading SOUTH
             if(map[xStart][yStart-1] == 0) //This code checks the SOUTH direction
               map[xStart][yStart-1] = wave + 1;
- 
+
           if(yStart < (Ysize - 1))//This code checks the array bounds heading NORTH
             if(map[xStart][yStart+1] == 0) //This code checks the NORTH direction
               map[xStart][yStart+1] = wave + 1;
         }
       }
-  	
+
     }//End of for
     wave++;
   }//End of while
 
 
-  
+
   	//Finds the Start Position
   for(x=0; x < Xsize; x++)	//Finds start position
   {
@@ -613,7 +618,7 @@ void wavefront(int directionFacing)
       }
     }
   }
-  
+
 
   	while( map[xRobot][yRobot] != 2){
 
@@ -649,4 +654,95 @@ void wavefront(int directionFacing)
 
 	  	move(1);
 	  }
+	  return directionFacing;
 }
+
+
+//finalBlock
+void finalBlock(int currentFace){
+	//Declarations
+	int Sx, Sy;
+	int x, y;
+	int closeX = 0;
+	int closeY = 0;
+	int diff = 0;
+	int diffX = 0;
+	int diffY = 0;
+	int diffHolder = 100;
+	int adj, opp;
+	float angle;
+	
+	//Finds the Start Position
+  for(x=0; x < Xsize; x++)	//Finds start position
+  {
+   for(y=0; y < Ysize; y++)
+    {
+     if(map[x][y] == 2)
+      {
+        Sx = x;
+        Sy = y;
+      }
+    }
+  }//End of for
+	
+  //Find closed Goal
+  for(x=0; x < Xsize; x++)
+  {
+   for(y=0; y < Ysize; y++)
+    {
+     if(map[x][y] == GOAL)
+      {
+        diffX = x > Sx? x-Sx:Sx-x;
+        diffY = y > Sy? (y-Sy)+diff:(Sy-y);
+        
+        diff = diffX + diffY;
+        
+        if(diff < diffHolder){
+        	closeX = x;
+        	closeY = y;
+        	diffHolder = diff;
+        }
+      }
+    }
+  }//End of for
+  
+  //Turn to South direction
+  currentFace = direction(currentFace, 0);
+  
+  if(closeY == 1 && closeX > 4){
+  	//Turn to North direction
+  	currentFace = direction(currentFace, 2);
+  }else if(closeY == 1 && closeX < 4){
+  	//Turn to South direction
+  	currentFace = direction(currentFace, 0);
+  }else if(closeY == 4){
+  	//Turn to East direction
+  	currentFace = direction(currentFace, 1);
+  }else{
+  
+  //Calculate Opposite and Adjacent
+  diff = closeY > Sy? closeY-Sy:Sy-closeY;
+  x = (diff+1) * 656.3;
+  y = closeX * 656.3;
+  
+  adj = x > y? x:y;
+  opp = x < y? x:y;
+  
+  map[6][6] = adj;
+  map[6][7] = opp;
+  map[1][1] = angle;
+	
+  angle = (atan2(adj, opp)*180)/3.14;
+  if(closeY > 4){
+  	angle = angle + 180;
+  }
+  angle = angle*2.155555555555;
+  //Complete turn is 388. 388 is 2.15555 times the size of 180
+  leftTurn(angle);
+  printWavefrontMap();
+}
+  
+  while(SensorValue(sonarSensor) > 30 || SensorValue(sonarSensor) < 10){
+  	move(1);
+  }
+}//End of finalBlock
