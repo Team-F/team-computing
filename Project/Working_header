@@ -3,18 +3,15 @@ Program Description:			Function for RobotC
 Authors:									Seamus de Cleir and Dylan Crosbie
 Date:											11/02/15
 ---------------------------------------------------------------------------------------------------------*/
+#define EDGE 1000	//1000  = Edge of table
+#define UNKNOWN 0	//0  = Unexplored
+#define GOAL 800	//800	 = Goal
+#define MINE 900	//900	 = Mine
+#define START 999	//999 = Start
 
-//GLOBAL VARIABLES grid world dimensions
+//Global 2D Array
 const int Xsize = 11;
 const int Ysize = 9;
-
-//GLOBAL ARRAY representation of grid world using a 2-Dimensional array
-//1000  = Off the table
-//0  = Unexplored
-//Numbered  = Clear Path
-//800	 = Object
-//900	 = Obstacle
-//999 = Start
 
 int map[Xsize][Ysize] =
  {{1000,1000,1000,1000,1000,1000,1000,1000,1000},
@@ -130,8 +127,8 @@ int moveForward(int blocks)
 	}
 }
 
-//FUNCTION print wavefront map to NXT screen
-void PrintWavefrontMap()
+//printWavefrontMap
+void printWavefrontMap()
 {
   int printLine = Ysize-1;
   for(int y = 0; y < Ysize; y++)
@@ -139,17 +136,17 @@ void PrintWavefrontMap()
     string printRow = "";
     for(int x=0; x < Xsize; x++)
     {
-      if(map[x][y] == 999)
+      if(map[x][y] == START)
         printRow = printRow + "S ";
-      else if(map[x][y] == 0)
+      else if(map[x][y] == UNKNOWN)
         printRow = printRow + "U ";
-      else if(map[x][y] > 0 && map[x][y] < 800)
+      else if(map[x][y] > UNKNOWN && map[x][y] < GOAL)
         printRow = printRow + "C ";
-      else if(map[x][y] == 900)
-      	printRow = printRow + "O ";
-      else if(map[x][y] == 800)
+      else if(map[x][y] == MINE)
+      	printRow = printRow + "M ";
+      else if(map[x][y] == GOAL)
       	printRow = printRow + "G ";
-      else if(map[x][y] == 1000)
+      else if(map[x][y] == EDGE)
         printRow = printRow + "";
       else
         printRow = printRow + map[x][y];
@@ -159,28 +156,71 @@ void PrintWavefrontMap()
   }
 }
 
-//Navigate
-void Navigate()
-{
-  //Robots Current Position
-  int robotX, robotY;
+//direction
+int direction(int current, int next){
+	//Finds the direction the robot should be facing
+    while(current != next)
+    {
+      if (current < next)
+      {
+      	leftTurn();
+        current++;
 
-  //Finds Robots current position
-  for(int x=0; x < Xsize; x++)
+      }
+      else if(current > next)
+      {
+      	rightTurn();
+        current--;
+
+      }//End of if
+    }//End of while
+    return current;
+}//End of direction
+
+//objectSensed
+int objectSensed(int current, int objects, int x, int y){
+	//If an object is sensed that the map records it as a 800(Goal)
+		if(SensorValue(sonarSensor) < 30 && SensorValue(sonarSensor) > 10){
+			if(current == 0){
+				map[x][y-1] = GOAL;	//Sensed when facing South
+			}
+			else if(current == 1){
+				map[x+1][y] = GOAL;	//Sensed when facing West
+			}
+			else if(current == 2){
+				map[x][y+1] = GOAL;	//Sensed when facing North
+			}
+			else{
+				map[x-1][y] = GOAL;	//Sensed when facing East
+			}
+			objects++;
+			PlaySoundFile("Star-Wars-3318.rso");
+			wait1Msec(1000);
+		}//End of if
+		return objects;
+}//End of objectSensed
+
+//navigate
+void navigate()
+{
+  //Start Position
+  int startX, startY;
+
+  for(int x=0; x < Xsize; x++)	//Finds start position
   {
     for(int y=0; y < Ysize; y++)
     {
-      if(map[x][y] == 999)
+      if(map[x][y] == START)
       {
-        robotX = x;
-        robotY = y;
+        startX = x;
+        startY = y;
       }
     }
   }
 
-  //Picks next path
-  int currentX = robotX;
-  int currentY = robotY;
+  //Declarations
+  int currentX = startX;
+  int currentY = startY;
   int currentFacing = 0;
   int nextDirection = 0;
   int objectsFound = 0;
@@ -190,106 +230,253 @@ void Navigate()
 
   while(objectsFound != 2)
   {
+
     nextDirection = currentFacing;
     int nextX = 0;
     int nextY = 0;
 
+    //If an object is sensed that the map records it as a 900(Goal) & exits function
+    objectsFound = objectSensed(currentFacing, objectsFound, currentX, currentY);
 
-    //If an object is sensed that the map records it as a 2(object)
-		if(SensorValue(sonarSensor) < 30 && SensorValue(sonarSensor) > 10){
-			if(currentFacing == 0){
-				map[currentX][currentY-1] = 800;	//Sensed when facing South
-			}
-			else if(currentFacing == 1){
-				map[currentX+1][currentY] = 800;	//Sensed when facing West
-			}
-			else if(currentFacing == 2){
-				map[currentX][currentY+1] = 800;	//Sensed when facing North
-			}
-			else{
-				map[currentX-1][currentY] = 800;	//Sensed when facing East
-			}
-			objectsFound++;
-		}
-		
-		if(objectsFound == 2){
-			return;
-		}
+    if(objectsFound == 2){
+				return;
+			}//End if
 
-    //Checks for free blocks
-    if(map[currentX][currentY-1] == 0) //Is South space unchecked (0 = South)
-    {
-      nextX = currentX;
-      nextY = currentY-1;
-      nextDirection = 0;
-    }
-    else if(map[currentX+1][currentY] == 0)	//Is West space unchecked (1 = West)
-    {
-    	nextX = currentX+1;
-      nextY = currentY;
-      nextDirection = 1;
-    }
-    else if(map[currentX][currentY+1] == 0)	//Is North space unchecked (2 = North)
-    {
-    	nextX = currentX;
-      nextY = currentY+1;
-      nextDirection = 2;
-    }
-    else if(map[currentX-1][currentY] == 0)	//Is East space unchecked (3 = East)
-    {
-    	nextX = currentX-1;
-      nextY = currentY;
-      nextDirection = 3;
-    }
-    	else //No new spaces. Time to back trcak
-    	{
-	    	smallest = map[currentX][currentY-1];
-	    	nextX = currentX;
-		    nextY = currentY-1;
-		    nextDirection = 0;
-		      
-	    	if(map[currentX+1][currentY] < smallest){
-	    		smallest = map[currentX+1][currentY];
-	    		nextX = currentX+1;
-      		nextY = currentY;
-      		nextDirection = 1;
-	    	}
-	    	if(map[currentX][currentY+1] < smallest){
-	    		smallest = map[currentX][currentY+1];
-	    		nextX = currentX;
-      		nextY = currentY+1;
-      		nextDirection = 2;
-	    	}
-	    	if(map[currentX-1][currentY] < smallest){
-	    		smallest = map[currentX-1][currentY];
-	    		nextX = currentX-1;
-      		nextY = currentY;
-      		nextDirection = 3;
-      	}
-    }
+		switch(currentFacing){
+			case 0:
+				//Checks for free blocks
+		    if(map[currentX-1][currentY] == UNKNOWN) //Is Right space unchecked
+		    {
+		      nextX = currentX-1;
+		      nextY = currentY;
+		      nextDirection = 3;
+		    }
+		    else if(map[currentX][currentY-1] == UNKNOWN)	//Is Striaght space unchecked (0 = South)
+		    {
+		    	nextX = currentX;
+		      nextY = currentY-1;
+		      nextDirection = 0;
+		    }
+		    else if(map[currentX+1][currentY] == UNKNOWN)	//Is North space unchecked (2 = )
+		    {
+		    	nextX = currentX+1;
+		      nextY = currentY;
+		      nextDirection = 1;
+		    }
+		    else if(map[currentX][currentY+1] == UNKNOWN)	//Is East space unchecked (3 = East)
+		    {
+		    	nextX = currentX;
+		      nextY = currentY+1;
+		      nextDirection = 2;
+		    }
+		    	else //No new spaces. Time to back trcak
+		    	{
+			    	smallest = map[currentX-1][currentY];
+			    	nextX = currentX-1;
+				    nextY = currentY;
+				    nextDirection = 3;
+
+			    	if(map[currentX][currentY-1] < smallest){
+			    		smallest = map[currentX][currentY-1];
+			    		nextX = currentX;
+		      		nextY = currentY-1;
+		      		nextDirection = 0;
+			    	}
+			    	if(map[currentX+1][currentY] < smallest){
+			    		smallest = map[currentX+1][currentY];
+			    		nextX = currentX+1;
+		      		nextY = currentY;
+		      		nextDirection = 1;
+			    	}
+			    	if(map[currentX][currentY+1] < smallest){
+			    		smallest = map[currentX][currentY+1];
+			    		nextX = currentX;
+		      		nextY = currentY+1;
+		      		nextDirection = 2;
+		      	}
+		    }//End of if
+		    break;
+
+		    case 1:
+		    		//Checks for free blocks
+				    if(map[currentX][currentY-1] == UNKNOWN) //Is North space unchecked (0 = South)
+				    {
+				      nextX = currentX;
+				      nextY = currentY-1;
+				      nextDirection = 0;
+				    }
+				    else if(map[currentX+1][currentY] == UNKNOWN)	//Is West space unchecked (1 = West)
+				    {
+				    	nextX = currentX+1;
+				      nextY = currentY;
+				      nextDirection = 1;
+				    }
+				    else if(map[currentX][currentY+1] == UNKNOWN)	//Is North space unchecked (2 = North)
+				    {
+				    	nextX = currentX;
+				      nextY = currentY+1;
+				      nextDirection = 2;
+				    }
+				    else if(map[currentX-1][currentY] == UNKNOWN)	//Is East space unchecked (3 = East)
+				    {
+				    	nextX = currentX-1;
+				      nextY = currentY;
+				      nextDirection = 3;
+				    }
+				    	else //No new spaces. Time to back trcak
+				    	{
+					    	smallest = map[currentX][currentY-1];
+					    	nextX = currentX;
+						    nextY = currentY-1;
+						    nextDirection = 0;
+
+					    	if(map[currentX+1][currentY] < smallest){
+					    		smallest = map[currentX+1][currentY];
+					    		nextX = currentX+1;
+				      		nextY = currentY;
+				      		nextDirection = 1;
+					    	}
+					    	if(map[currentX][currentY+1] < smallest){
+					    		smallest = map[currentX][currentY+1];
+					    		nextX = currentX;
+				      		nextY = currentY+1;
+				      		nextDirection = 2;
+					    	}
+					    	if(map[currentX-1][currentY] < smallest){
+					    		smallest = map[currentX-1][currentY];
+					    		nextX = currentX-1;
+				      		nextY = currentY;
+				      		nextDirection = 3;
+				      	}
+				    }//End of if
+				    break;
+
+
+				    case 2:
+						//Checks for free blocks
+				    if(map[currentX+1][currentY] == UNKNOWN) //Is North space unchecked (0 = South)
+				    {
+				      nextX = currentX+1;
+				      nextY = currentY;
+				      nextDirection = 1;
+				    }
+				    else if(map[currentX][currentY+1] == UNKNOWN)	//Is West space unchecked (1 = West)
+				    {
+				    	nextX = currentX;
+				      nextY = currentY+1;
+				      nextDirection = 2;
+				    }
+				    else if(map[currentX-1][currentY] == UNKNOWN)	//Is North space unchecked (2 = North)
+				    {
+				    	nextX = currentX-1;
+				      nextY = currentY;
+				      nextDirection = 3;
+				    }
+				    else if(map[currentX][currentY-1] == UNKNOWN)	//Is East space unchecked (3 = East)
+				    {
+				    	nextX = currentX;
+				      nextY = currentY-1;
+				      nextDirection = 0;
+				    }
+				    	else //No new spaces. Time to back trcak
+				    	{
+					    	smallest = map[currentX+1][currentY];
+					    	nextX = currentX+1;
+						    nextY = currentY;
+						    nextDirection = 1;
+
+					    	if(map[currentX][currentY+1] < smallest){
+					    		smallest = map[currentX][currentY+1];
+					    		nextX = currentX;
+				      		nextY = currentY+1;
+				      		nextDirection = 2;
+					    	}
+					    	if(map[currentX-1][currentY] < smallest){
+					    		smallest = map[currentX-1][currentY];
+					    		nextX = currentX-1;
+				      		nextY = currentY;
+				      		nextDirection = 3;
+					    	}
+					    	if(map[currentX][currentY-1] < smallest){
+					    		smallest = map[currentX][currentY-1];
+					    		nextX = currentX;
+				      		nextY = currentY-1;
+				      		nextDirection = 0;
+				      	}
+				    }//End of if
+				    break;
+		    case 3:
+				//Checks for free blocks
+		    if(map[currentX][currentY+1] == UNKNOWN) //Is North space unchecked (0 = South)
+		    {
+		      nextX = currentX;
+		      nextY = currentY+1;
+		      nextDirection = 2;
+		    }
+		    else if(map[currentX-1][currentY] == UNKNOWN)	//Is West space unchecked (1 = West)
+		    {
+		    	nextX = currentX-1;
+		      nextY = currentY;
+		      nextDirection = 3;
+		    }
+		    else if(map[currentX][currentY-1] == UNKNOWN)	//Is North space unchecked (2 = North)
+		    {
+		    	nextX = currentX;
+		      nextY = currentY-1;
+		      nextDirection = 0;
+		    }
+		    else if(map[currentX+1][currentY] == UNKNOWN)	//Is East space unchecked (3 = East)
+		    {
+		    	nextX = currentX+1;
+		      nextY = currentY;
+		      nextDirection = 1;
+		    }
+		    	else //No new spaces. Time to back trcak
+		    	{
+			    	smallest = map[currentX][currentY+1];
+			    	nextX = currentX;
+				    nextY = currentY+1;
+				    nextDirection = 2;
+
+			    	if(map[currentX-1][currentY] < smallest){
+			    		smallest = map[currentX-1][currentY];
+			    		nextX = currentX-1;
+		      		nextY = currentY;
+		      		nextDirection = 3;
+			    	}
+			    	if(map[currentX][currentY-1] < smallest){
+			    		smallest = map[currentX][currentY-1];
+			    		nextX = currentX;
+		      		nextY = currentY-1;
+		      		nextDirection = 0;
+			    	}
+			    	if(map[currentX+1][currentY] < smallest){
+			    		smallest = map[currentX+1][currentY];
+			    		nextX = currentX+1;
+		      		nextY = currentY;
+		      		nextDirection = 1;
+		      	}
+		    }//End of if
+		    break;
+		  }
 
     //Finds the direction the robot should be facing
-    while(currentFacing != nextDirection)
-    {
-      if (currentFacing < nextDirection)
-      {
-      	leftTurn();
-        currentFacing++;
+    currentFacing = direction(currentFacing, nextDirection);
 
-      }
-      else if(currentFacing > nextDirection)
-      {
-      	rightTurn();
-        currentFacing--;
+    //If an object is sensed that the map records it as a 900(Goal)
+    objectsFound = objectSensed(currentFacing, objectsFound, currentX, currentY);
 
-      }//End of if
-    }//End of while
+    if(objectsFound == 2){
+				return;
+			}
 
     //Moves the Robot forward one block
     mine = moveForward(1);
 
     if(mine == 1){
-			map[nextX][nextY] = 900;
+			map[nextX][nextY] = MINE;
+			PlaySoundFile("dog_ruff.rso");
+			wait1Msec(1000);
 		}else{
 			//Updates current location
 	    currentX = nextX;
@@ -298,8 +485,31 @@ void Navigate()
 	    numbered++;
   	}
 
-    PrintWavefrontMap();
+    printWavefrontMap();
     wait1Msec(500);
 
-    }
+  }//End of while
+
+}//End of navigate
+
+
+//Wavefront Algorithm
+void wavefront()
+{
+	int y, x;
+
+
+	//Clears the old map
+	for(x=0;x<Xsize;x++)
+		{
+		for(y=0;y<Ysize;y++)
+			{
+				if(map[x][y] == UNKNOWN){
+					map[x][y] = MINE;
+				}else if(map[x][y] > UNKNOWN && map[x][y] < GOAL){
+					map[x][y] = 0;
+				}
+			}
+  	}
+  	printWavefrontMap();
 }
