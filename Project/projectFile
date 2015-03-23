@@ -16,7 +16,11 @@ Date:				25/02/2015
 
 task main()
 {
+	//Declarations
+	int facing;
 
-	navigate();
-	wavefront();
+	//Code Body
+	facing = navigate();
+	wavefront(facing);
 }
+
