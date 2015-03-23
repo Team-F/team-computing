@@ -666,10 +666,10 @@ void finalBlock(int currentFace){
 	int closeX = 0;
 	int closeY = 0;
 	int diff = 0;
-	int diffX = 0;
+	int len1, len2;
 	int diffY = 0;
-	int diffHolder = 100;
-	int adj, opp;
+	int diffHolder;
+	int adj, opp, hypo;
 	float angle;
 	
 	//Finds the Start Position
@@ -692,15 +692,17 @@ void finalBlock(int currentFace){
     {
      if(map[x][y] == GOAL)
       {
-        diffX = x > Sx? x-Sx:Sx-x;
-        diffY = y > Sy? (y-Sy)+diff:(Sy-y);
-        
-        diff = diffX + diffY;
-        
-        if(diff < diffHolder){
+        diffY = y > Sy? (y-Sy):(Sy-y);
+        len1 = (diffY + 1)*656.3;
+        len2 = x * 656.3;
+        hypo = len1^2 + len2^2;
+        if(diff == 0){
+        	diffHolder = hypo;
+        	diff++;
+      	}
+        if(hypo <= diffHolder){
         	closeX = x;
         	closeY = y;
-        	diffHolder = diff;
         }
       }
     }
@@ -734,7 +736,7 @@ void finalBlock(int currentFace){
 	
   angle = (atan2(adj, opp)*180)/3.14;
   if(closeY > 4){
-  	angle = angle + 180;
+  	angle = angle + 90;
   }
   angle = angle*2.155555555555;
   //Complete turn is 388. 388 is 2.15555 times the size of 180
