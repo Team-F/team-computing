@@ -16,7 +16,7 @@ Date:				25/02/2015
 
 task main()
 {
-	
-	
-	Navigate();
+
+	navigate();
+	wavefront();
 }
