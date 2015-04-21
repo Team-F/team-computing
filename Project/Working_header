@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------------------------------------
-Program Description: Function for RobotC
-Authors: Seamus de Cleir and Dylan Crosbie
-Date: 11/04/15
+Program Description: 	Function for RobotC
+Authors: 							Seamus de Cleir and Dylan Crosbie
+Date: 								11/04/15
 ---------------------------------------------------------------------------------------------------------*/
 
 #define EDGE 1000 //1000 = Edge of table
@@ -12,6 +12,9 @@ Date: 11/04/15
 #define START 999 //999 = Start
 
 //----------------------------------------------------------------------------------------------------------------------//
+
+/* This Array contains the map that shows up on the screen of the robot. It is constantly updated as the
+	 Robot finds out more about its environment */
 
 //Global 2D Array
 const int Xsize = 11;
@@ -29,6 +32,8 @@ int map[Xsize][Ysize] = {{1000,1000,1000,1000,1000,1000,1000,1000,1000},
 												{1000,1000,1000,1000,1000,1000,1000,1000,1000}};
 
 //----------------------------------------------------------------------------------------------------------------------//
+
+/* This Function simply preforms a 90 degree right turn */												
 												
 //rightTurn Function
 void rightTurn(int turn){
@@ -49,6 +54,8 @@ void rightTurn(int turn){
 
 //----------------------------------------------------------------------------------------------------------------------//
 
+/* This Function simply preforms a 90 degree left turn */
+
 //leftTurn Function
 void leftTurn(int turn){
 	
@@ -68,6 +75,8 @@ void leftTurn(int turn){
 }//End of leftTurn
 
 //----------------------------------------------------------------------------------------------------------------------//
+
+/* Move just moves the robot forward without checking for mines */
 
 //move
 void move(int block){
@@ -90,10 +99,12 @@ void move(int block){
 
 //----------------------------------------------------------------------------------------------------------------------//
 
+/* This Function is used to move the robot forward. It also checks squares infront for mines */
+
 //moveForward
 int moveForward(int blocks){
 	
-	int countsToTravel = 265;
+	int countsToTravel = 265*blocks;
 	
 	if(SensorValue(lightSensor) < 50){
 		return 1;
@@ -116,6 +127,8 @@ int moveForward(int blocks){
 }//End of moveForward
 
 //----------------------------------------------------------------------------------------------------------------------//
+
+/* This Function prints the array to the NXT screen */
 
 //printWavefrontMap
 void printWavefrontMap(){
@@ -156,6 +169,9 @@ void printWavefrontMap(){
 
 //----------------------------------------------------------------------------------------------------------------------//
 
+/* This is how the robot decides what direction to move. It turns until the current 
+	 direction matches the next direction */
+
 //direction
 int direction(int current, int next){
 	
@@ -177,6 +193,8 @@ int direction(int current, int next){
 }//End of direction
 
 //----------------------------------------------------------------------------------------------------------------------//
+
+/* If a sensed object is detected it is recorded onto the array using this function  */
 
 //objectSensed
 int objectSensed(int current, int objects, int x, int y){
@@ -204,6 +222,12 @@ int objectSensed(int current, int objects, int x, int y){
 }//End of objectSensed
 
 //----------------------------------------------------------------------------------------------------------------------//
+
+/* Navigate is the main fuction that drives this robot. The main while loop is triggered to 
+	 stop running when two objects are found, otherwise the robot will keep searching each
+	 node on the array map until it can no longer turn into a node marked zero. If there
+	 are no more zero marked nodes it moves to the smallest number. The robot always trys to
+	 turn right */
 
 //navigate
 int navigate(){
@@ -490,6 +514,11 @@ int navigate(){
 
 //----------------------------------------------------------------------------------------------------------------------
 
+/* Once both objects are found this function works out the quickest way back to the starting point
+	 using the wavefront algorithm. Each known node on the map is set to zero unless it is a mine.
+	 Then by adding one to each adjacent node starting from the starting point a wavefront map is
+	 formed. The robot then follows the smallest number back to the starting point */
+
 //Wavefront Algorithm
 int wavefront(int directionFacing){
 	
@@ -632,6 +661,8 @@ int wavefront(int directionFacing){
 }//End of wavefront
 
 //----------------------------------------------------------------------------------------------------------------------
+
+/* FinalBlock uses the Pythagorean theorem to figure out which block is closer and at what angle to travel */
 
 //finalBlock
 void finalBlock(int currentFace){
