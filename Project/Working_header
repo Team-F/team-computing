@@ -1,9 +1,87 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:    						      Function for RobotC
+Authors:                            Seamus de Cleir and Dylan Crosbie
+Date:                               27/04/15
+---------------------------------------------------------------------------------------------------------*/
+ 
+#define EDGE 1000 //1000 = Edge of table
+#define UNKNOWN 0 //0 = Unexplored
+#define GOAL 800 //800 = Goal
+#define ROBOT 888 //888 = Robot
+#define MINE 900 //900 = Mine
+#define START 999 //999 = Start
+ 
+//----------------------------------------------------------------------------------------------------------------------//
+ 
+/* This Array contains the map that shows up on the screen of the robot. It is constantly updated as the
+     Robot finds out more about its environment */
+ 
+//Global 2D Array
+const int Xsize = 11;
+const int Ysize = 9;
+int map[Xsize][Ysize] = {{1000,1000,1000,1000,1000,1000,1000,1000,1000},
+                         {1000,0,0,0,999,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,1000,1000,1000,1000,1000,1000,1000,1000}};
+ 
+//----------------------------------------------------------------------------------------------------------------------//
+ 
+/* This Function simply preforms a 90 degree right turn */
+ 
+//rightTurn Function
+void rightTurn(float turn){
+    nMotorEncoder[rightMotor] = 0; //Sets the distance calculator to zero
+    nMotorEncoder[leftMotor] = 0;
+ 
+    while (nMotorEncoder[leftMotor] < turn && nMotorEncoder[rightMotor] > -(turn)){ //This while loop continues until the motor A has gone a -300 revolution
+        motor[rightMotor] = -25; //Moves motor A at -50%, turning the robot
+        motor[leftMotor] = 25;
+    }//End of while
+ 
+    //stop for half second at end of movement
+    motor[rightMotor] = 0;
+    motor[leftMotor] = 0;
+    wait1Msec(500);
+ 
+}//End of rightTurn
+ 
+//----------------------------------------------------------------------------------------------------------------------//
+ 
+/* This Function simply preforms a 90 degree left turn */
+ 
+//leftTurn Function
+void leftTurn(float turn){
+ 
+    nMotorEncoder[rightMotor] = 0; //Sets the distance calculator to zero
+    nMotorEncoder[leftMotor] = 0;
+ 
+    while (nMotorEncoder[rightMotor] < turn && nMotorEncoder[leftMotor] > -(turn)){ //This while loop continues until the motor A has gone a -300 revolution
+        motor[rightMotor] = 25; //Moves motor A at -25%, turning the robot
+        motor[leftMotor] = -25;
+    }//End of while
+ 
+    //stop for half second at end of movement
+    motor[rightMotor] = 0;
+    motor[leftMotor] = 0;
+    wait1Msec(500);
+ 
+}//End of leftTurn
+ 
+//----------------------------------------------------------------------------------------------------------------------//
+ 
 /* Move just moves the robot forward without checking for mines */
  
 //move
-void move(int block){
+void move(float block){
  
-    int count = 270*block;
+    float count = 270*block;
     nMotorEncoder[rightMotor] = 0; //Resets both motors distance calculators
     nMotorEncoder[leftMotor] = 0;
  
@@ -438,150 +516,110 @@ int navigate(){
  
 //----------------------------------------------------------------------------------------------------------------------
  
-/* Once both objects are found this function works out the quickest way back to the starting point
-     using the wavefront algorithm. Each known node on the map is set to zero unless it is a mine.
-     Then by adding one to each adjacent node starting from the starting point a wavefront map is
-     formed. The robot then follows the smallest number back to the starting point */
- 
-//Wavefront Algorithm
-int wavefront(int directionFacing){
- 
+/* Homeward uses the Pythagorean theorem to figure out the angle and distance it neds to travel back to 
+	 the start position*/
+
+//homeward Algorithm
+int homeward(int directionFacing){
+
     //Declarations
     int y, x;
     int xStart, yStart;
     int xRobot, yRobot;
-    int xNext, yNext;
-    int directionNext = 0;
-    int lowest;
- 
+    int yDiff = 0;
+    int xDiff = 0;
+    float angle, hypo;
+    unsigned long adj, opp, hyposquared;
+
     //Clears the old map
-    for(x=0;x<Xsize;x++){
- 
-        for(y=0;y<Ysize;y++){
- 
-            if(map[x][y] == UNKNOWN){
-                map[x][y] = MINE;
-            }else if(map[x][y] > UNKNOWN && map[x][y] < GOAL){
-                map[x][y] = 0;
-            }else if(map[x][y] == START){
-                map[x][y] = 2;
-            }//End of if
- 
-        }//End of for
- 
-    }//End of for
- 
+	for(x=0;x<Xsize;x++)
+		{
+		for(y=0;y<Ysize;y++)
+			{
+				if(map[x][y] == UNKNOWN){
+					map[x][y] = MINE;
+				}else if(map[x][y] > UNKNOWN && map[x][y] < GOAL){
+					map[x][y] = 0;
+				}else if(map[x][y] == START){
+					map[x][y] = 2;
+				}
+			}
+  	}
+
+
     //Finds the Robots Position
     for(x=0; x < Xsize; x++){ //Finds start position
- 
+
         for(y=0; y < Ysize; y++){
- 
+
             if(map[x][y] == ROBOT){
                 xRobot = x;
                 yRobot = y;
             }//End of if
- 
+
         }//End of for
- 
+
     }//End of for
- 
-    int wave = 2;
-    int foundWave = 1;
- 
-    while(foundWave == 1){
- 
-        foundWave = 0;
- 
-        for(int y=0; y < Ysize; y++){
- 
-            for(int x=0; x < Xsize; x++){
- 
-                if(map[x][y] == wave){
-                    foundWave = true;
-                    xStart = x;
-                    yStart = y;
- 
-                    if(xStart > 0) //This code checks the array bounds heading WEST
-                        if(map[xStart-1][yStart] == 0) //This code checks the WEST direction
-                            map[xStart-1][yStart] = wave + 1;
- 
-                    if(xStart < (Xsize - 1)) //This code checks the array bounds heading EAST
-                        if(map[xStart+1][yStart] == 0)//This code checks the EAST direction
-                            map[xStart+1][yStart] = wave + 1;
- 
-                    if(yStart > 0)//This code checks the array bounds heading SOUTH
-                        if(map[xStart][yStart-1] == 0) //This code checks the SOUTH direction
-                            map[xStart][yStart-1] = wave + 1;
- 
-                    if(yStart < (Ysize - 1))//This code checks the array bounds heading NORTH
-                        if(map[xStart][yStart+1] == 0) //This code checks the NORTH direction
-                            map[xStart][yStart+1] = wave + 1;
- 
-                }//End of if
- 
-            }//End of for
- 
-        }//End of for
- 
-        wave++;
- 
-    }//End of while
- 
- 
+
     //Finds the Start Position
     for(x=0; x < Xsize; x++){ //Finds start position
- 
+
         for(y=0; y < Ysize; y++){
- 
+
             if(map[x][y] == 2){
                 xStart = x;
                 yStart = y;
             }//End of if
- 
+
         }//End of for
- 
+
     }//End of for
- 
-    while( map[xRobot][yRobot] != 2){
- 
-        lowest = map[xRobot][yRobot-1];
-        xNext = xRobot;
-        yNext = yRobot-1;
-        directionNext = 0;
- 
-        if(map[xRobot+1][yRobot] < lowest){
-            lowest = map[xRobot+1][yRobot];
-            xNext = xRobot+1;
-            yNext = yRobot;
-            directionNext = 1;
+
+    //Turns to start direction
+  directionFacing = direction(directionFacing, 3);
+
+        //Calculate Opposite and Adjacent
+        yDiff = yRobot > yStart? yRobot-yStart:yStart-yRobot;
+        xDiff = xRobot > xStart? xRobot-xStart:xStart-xRobot;
+        x = (yDiff) * 270;//-----------------------------------------------------------Change here
+        y = (xDiff) * 270;//-----------------------------------------------------------Change here
+        adj = x;
+        opp = y;
+        hyposquared = (opp * opp) + (adj * adj);
+        hypo = sqrt(hyposquared);
+        
+				//If the y postition is 4 the robot just needs to travel staight
+        if(yRobot == 4){
+        	move(xDiff);
+        }else if(xRobot == 1){		//If the x position is 1 the robot will travel North
+        	directionFacing = direction(directionFacing, 0);
+        	move(yDiff);
+        }else{
+				
+        //Calculates the angle needed
+        angle = atan2(adj, opp)*(180/3.14);
+
+        angle = angle*1.8;//-----------------------------------------------------------Change here
+
+        if(yRobot > 4){
+        	leftTurn(angle);
+        }else{
+        	rightTurn(angle);
         }//End of if
- 
-        if(map[xRobot][yRobot+1] < lowest){
-            lowest = map[xRobot][yRobot+1];
-            xNext = xRobot;
-            yNext = yRobot+1;
-            directionNext = 2;
+
+        move ((hypo/270));//-----------------------------------------------------------Change here
+
+        if(yRobot > 4){
+        	rightTurn(angle);
+        }else{
+        	leftTurn(angle);
         }//End of if
- 
-        if(map[xRobot-1][yRobot] < lowest){
-            lowest = map[xRobot-1][yRobot];
-            xNext = xRobot-1;
-            yNext = yRobot;
-            directionNext = 3;
-        }//End of if
- 
-        xRobot = xNext;
-        yRobot = yNext;
- 
-        //Finds the direction the robot should be facing
-        directionFacing = direction(directionFacing, directionNext);
-        printWavefrontMap();
-        move(1);
- 
-    }//End of while
- 
+      }
+    printWavefrontMap();
+
+
     return directionFacing;
- 
+
 }//End of wavefront
  
 //----------------------------------------------------------------------------------------------------------------------
