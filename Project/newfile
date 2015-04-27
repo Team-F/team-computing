@@ -1,0 +1,113 @@
+//----------------------------------------------------------------------------------------------------------------------
+ 
+/* Once both objects are found this function works out the quickest way back to the starting point
+     using the wavefront algorithm. Each known node on the map is set to zero unless it is a mine.
+     Then by adding one to each adjacent node starting from the starting point a wavefront map is
+     formed. The robot then follows the smallest number back to the starting point */
+ 
+//Wavefront Algorithm
+int wavefront(int directionFacing){
+ 
+    //Declarations
+    int y, x;
+    int xStart, yStart;
+    int xRobot, yRobot;
+    int yDiff = 0;
+    int xDiff = 0;
+    float angle, hypo;
+    unsigned long adj, opp, hyposquared;
+    
+    //Clears the old map
+	for(x=0;x<Xsize;x++)
+		{
+		for(y=0;y<Ysize;y++)
+			{
+				if(map[x][y] == UNKNOWN){
+					map[x][y] = MINE;
+				}else if(map[x][y] > UNKNOWN && map[x][y] < GOAL){
+					map[x][y] = 0;
+				}else if(map[x][y] == START){
+					map[x][y] = 2;
+				}
+			}
+  	}
+    
+ 
+    //Finds the Robots Position
+    for(x=0; x < Xsize; x++){ //Finds start position
+ 
+        for(y=0; y < Ysize; y++){
+ 
+            if(map[x][y] == ROBOT){
+                xRobot = x;
+                yRobot = y;
+            }//End of if
+ 
+        }//End of for
+ 
+    }//End of for
+ 
+    //Finds the Start Position
+    for(x=0; x < Xsize; x++){ //Finds start position
+ 
+        for(y=0; y < Ysize; y++){
+ 
+            if(map[x][y] == 2){
+                xStart = x;
+                yStart = y;
+            }//End of if
+ 
+        }//End of for
+ 
+    }//End of for
+ 
+    //Turn to West direction
+  directionFacing = direction(directionFacing, 3);
+ 
+        //Calculate Opposite and Adjacent
+        yDiff = yRobot > yStart? yRobot-yStart:yStart-yRobot;
+        xDiff = xRobot > xStart? xRobot-xStart:xStart-xRobot;
+        x = (yDiff) * 656.3;//-----------------------------------------------------------Change here
+        y = (xDiff) * 656.3;//-----------------------------------------------------------Change here
+        adj = x;
+        opp = y;
+        hyposquared = (opp * opp) + (adj * adj);
+        hypo = sqrt(hyposquared);
+        
+        if(yRobot == 4){
+        	move(xDiff);
+        }else if(xRobot == 1){
+        	directionFacing = direction(directionFacing, 0);
+        	move(yDiff);
+        }else{
+ 
+        angle = atan2(adj, opp)*(180/3.14);
+ 
+        angle = angle*2.15555555;//-----------------------------------------------------------Change here
+ 
+        if(yRobot > 4){
+        	leftTurn(angle);
+        }else{
+        	rightTurn(angle);
+        }//End of if
+        
+        map[6][7] = opp;
+        map[6][8] = adj;
+        map[5][5] = angle;
+
+        map[6][6] = hypo;
+        
+        move ((hypo/656));//-----------------------------------------------------------Change here
+      	
+        if(yRobot > 4){
+        	rightTurn(angle);
+        }else{
+        	leftTurn(angle);
+        }//End of if
+      }
+    printWavefrontMap();
+ 
+ 
+    return directionFacing;
+
+}//End of wavefront
