@@ -1,0 +1,144 @@
+
+
+//Wavefront Algorithm
+void wavefront(int directionFacing)
+{
+    //Declarations
+	int y, x;
+	int xStart, yStart;
+	int xRobot, yRobot;
+	int xNext, yNext;
+	int directionNext = 0;
+	int lowest;
+
+
+	//Clears the old map
+	for(x=0;x<Xsize;x++){
+		
+        for(y=0;y<Ysize;y++){
+				
+            if(map[x][y] == UNKNOWN){
+				map[x][y] = MINE;
+            }else if(map[x][y] > UNKNOWN && map[x][y] < GOAL){
+				map[x][y] = 0;
+            }else if(map[x][y] == START){
+					map[x][y] = 2;
+            }//End of if
+        
+        }//End of for
+  	
+    }//End of for
+    
+    //Finds the Robots Position
+    for(x=0; x < Xsize; x++){
+        
+        for(y=0; y < Ysize; y++){
+            
+            if(map[x][y] == ROBOT){
+                xRobot = x;
+                yRobot = y;
+            }//End of if
+            
+        }//End of for
+    
+    }//End of for
+    
+    
+    int wave = 2;
+    int foundWave = 1;
+    
+    while(foundWave == 1){
+        foundWave = 0;
+        
+        for(int y=0; y < Ysize; y++){
+            
+            for(int x=0; x < Xsize; x++){
+                
+                if(map[x][y] == wave){
+                    
+                    foundWave = true;
+                    xStart = x;
+                    yStart = y;
+
+                    if(xStart > 0) //This code checks the array bounds heading WEST
+                        if(map[xStart-1][yStart] == 0)  //This code checks the WEST direction
+                            map[xStart-1][yStart] = wave + 1;
+
+                    if(xStart < (Xsize - 1)) //This code checks the array bounds heading EAST
+                        if(map[xStart+1][yStart] == 0)//This code checks the EAST direction
+                            map[xStart+1][yStart] = wave + 1;
+
+                    if(yStart > 0)//This code checks the array bounds heading SOUTH
+                        if(map[xStart][yStart-1] == 0) //This code checks the SOUTH direction
+                            map[xStart][yStart-1] = wave + 1;
+
+                    if(yStart < (Ysize - 1))//This code checks the array bounds heading NORTH
+                        if(map[xStart][yStart+1] == 0) //This code checks the NORTH direction
+                            map[xStart][yStart+1] = wave + 1;
+                
+                }//End of if
+            
+            }//End of for
+        
+        }//End of for
+        
+        wave++;
+    
+    }//End of while
+
+
+    //Finds the Start Position
+    for(x=0; x < Xsize; x++){
+        
+        for(y=0; y < Ysize; y++){
+            
+            if(map[x][y] == 2){
+                xStart = x;
+                yStart = y;
+            }//End of if
+        
+        }//End of for
+    
+    }//End of for
+
+
+    while( map[xRobot][yRobot] != 2){
+        
+        lowest = map[xRobot][yRobot-1];
+        xNext = xRobot;
+        yNext = yRobot-1;
+        directionNext = 0;
+        
+        if(map[xRobot+1][yRobot] < lowest){
+            
+            lowest = map[xRobot+1][yRobot];
+            xNext = xRobot+1;
+            yNext = yRobot;
+            directionNext = 1;
+
+        }//End of if
+        
+        if(map[xRobot][yRobot+1] < lowest){
+            lowest = map[xRobot][yRobot+1];
+            xNext = xRobot;
+            yNext = yRobot+1;
+            directionNext = 2;
+        }//End of if
+        
+        if(map[xRobot-1][yRobot] < lowest){
+            lowest = map[xRobot-1][yRobot];
+            xNext = xRobot-1;
+            yNext = yRobot;
+            directionNext = 3;
+        }//End of if
+        
+        xRobot = xNext;
+	    yRobot = yNext;
+
+        //Finds the direction the robot should be facing
+	    directionFacing = direction(directionFacing, directionNext);
+	  	printWavefrontMap();
+        
+        move(1);
+    
+    }//End of while
