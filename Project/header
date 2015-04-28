@@ -1,0 +1,748 @@
+/*----------------------------------------------------------------------------------------------------------
+Program Description:    						            Function for RobotC
+Authors:                                        Seamus de Cleir and Dylan Crosbie
+Date:                                           27/04/15
+---------------------------------------------------------------------------------------------------------*/
+
+#define EDGE 1000 //1000 = Edge of table
+#define UNKNOWN 0 //0 = Unexplored
+#define GOAL 800 //800 = Goal
+#define ROBOT 888 //888 = Robot
+#define MINE 900 //900 = Mine
+#define START 999 //999 = Start
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* This Array contains the map that shows up on the screen of the robot. It is constantly updated as the
+     Robot finds out more about its environment */
+
+//Global 2D Array
+const int Xsize = 11;
+const int Ysize = 9;
+int map[Xsize][Ysize] = {{1000,1000,1000,1000,1000,1000,1000,1000,1000},
+                         {1000,0,0,0,999,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,0,0,0,0,0,0,0,1000},
+                         {1000,1000,1000,1000,1000,1000,1000,1000,1000}};
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* This Function simply preforms a 90 degree right turn */
+
+//rightTurn Function
+void rightTurn(float turn){
+    nMotorEncoder[rightMotor] = 0; //Sets the distance calculator to zero
+    nMotorEncoder[leftMotor] = 0;
+
+    while (nMotorEncoder[leftMotor] < turn && nMotorEncoder[rightMotor] > -(turn)){ //This while loop continues until the motor A                                                                                         has gone its revolution
+        motor[rightMotor] = -25; //Moves motor A at -50%, turning the robot
+        motor[leftMotor] = 25;
+    }//End of while
+
+    //stop for half second at end of movement
+    motor[rightMotor] = 0;
+    motor[leftMotor] = 0;
+    wait1Msec(100);
+
+}//End of rightTurn
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* This Function simply preforms a 90 degree left turn */
+
+//leftTurn Function
+void leftTurn(float turn){
+
+    nMotorEncoder[rightMotor] = 0; //Sets the distance calculator to zero
+    nMotorEncoder[leftMotor] = 0;
+
+    while (nMotorEncoder[rightMotor] < turn && nMotorEncoder[leftMotor] > -(turn)){ //This while loop continues until the motor A                                                                                         has gone it's revolution
+        motor[rightMotor] = 25; //Moves motor A at -25%, turning the robot
+        motor[leftMotor] = -25;
+    }//End of while
+
+    //stop for half second at end of movement
+    motor[rightMotor] = 0;
+    motor[leftMotor] = 0;
+    wait1Msec(100);
+
+}//End of leftTurn
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* Move just moves the robot forward without checking for mines */
+
+//move
+void move(float block){
+
+    float count = 270*block;
+    nMotorEncoder[rightMotor] = 0; //Resets both motors distance calculators
+    nMotorEncoder[leftMotor] = 0;
+
+    //encoder target for countsToTravel
+    while (nMotorEncoder[rightMotor]<count&& nMotorEncoder[leftMotor]<count){ //Moves the robot forward the target amount specified
+        motor[leftMotor] = 30; //Sets the power to a random number for both motors
+        motor[rightMotor] = 30;
+    }//End of while
+
+    //stop for half second at end of movement
+    motor[rightMotor] = 0;
+    motor[leftMotor] = 0;
+
+}//End of move
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* This Function is used to move the robot forward. It also checks squares infront for mines */
+
+//moveForward
+int moveForward(int blocks){
+
+    int countsToTravel = 270*blocks;
+
+    if(SensorValue(lightSensor) < 50){
+        return 1;
+    }else{
+        nMotorEncoder[rightMotor] = 0; //Resets both motors distance calculators
+        nMotorEncoder[leftMotor] = 0;
+
+        while (nMotorEncoder[rightMotor]<countsToTravel && nMotorEncoder[leftMotor]<countsToTravel){ //Moves the robot forward the                                                                                                          target amount specified
+            motor[leftMotor] = 30; //Sets the power to a random number for both motors
+            motor[rightMotor] = 30;
+        }//End of while
+
+        //stop for half second at end of movement
+        motor[rightMotor] = 0;
+        motor[leftMotor] = 0;
+        wait1Msec(100);
+        return 0;
+    }//End of if
+
+}//End of moveForward
+
+
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* This Function prints the array to the NXT screen */
+
+//printWavefrontMap
+void printWavefrontMap(){
+
+    int printLine = Ysize-1;
+
+    for(int y = 0; y < Ysize; y++){
+
+        string printRow = "";
+
+        for(int x=0; x < Xsize; x++){
+
+            if(map[x][y] == START)
+                printRow = printRow + "S ";
+            else if(map[x][y] == UNKNOWN)
+                printRow = printRow + "U ";
+            else if(map[x][y] > UNKNOWN && map[x][y] < GOAL)
+                printRow = printRow + "C ";
+            else if(map[x][y] == MINE)
+                printRow = printRow + "M ";
+            else if(map[x][y] == GOAL)
+                printRow = printRow + "G ";
+            else if(map[x][y] == EDGE)
+                printRow = printRow + "";
+            else if(map[x][y] == ROBOT)
+                printRow = printRow + "R ";
+            else{
+                printRow = printRow + map[x][y];
+                }//End of if
+
+            }//End of for
+
+        nxtDisplayString(printLine, printRow);
+        printLine--;
+    }//End of for
+
+}//End of printWavefrontMap
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* This is how the robot decides what direction to move. It turns until the current
+     direction matches the next direction */
+
+//direction
+int direction(int current, int next){
+
+    //Finds the direction the robot should be facing
+    while(current != next){
+
+        if (current < next){
+            leftTurn(179);
+            current++;
+        }else if(current > next){
+            rightTurn(179);
+            current--;
+        }//End of if
+
+    }//End of while
+
+    return current;
+
+}//End of direction
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* If a sensed object is detected it is recorded onto the array using this function  */
+
+//objectSensed
+int objectSensed(int current, int objects, int x, int y){
+
+    //If an object is sensed that the map records it as a 800(Goal)
+    if(SensorValue(sonarSensor) < 25 && SensorValue(sonarSensor) > 10){
+
+        if(current == 0){
+            map[x][y-1] = GOAL; //Sensed when facing South
+        }else if(current == 1){
+            map[x+1][y] = GOAL; //Sensed when facing West
+        }else if(current == 2){
+            map[x][y+1] = GOAL; //Sensed when facing North
+        }else{
+            map[x-1][y] = GOAL; //Sensed when facing East
+        }//End of if
+
+        objects++;
+        PlaySoundFile("Star-Wars-3318.rso");
+        wait1Msec(400);
+
+    }//End of if
+
+    return objects;
+}//End of objectSensed
+
+//----------------------------------------------------------------------------------------------------------------------//
+
+/* Navigate is the main fuction that drives this robot. The main while loop is triggered to
+     stop running when two objects are found, otherwise the robot will keep searching each
+     node on the array map until it can no longer turn into a node marked zero. If there
+     are no more zero marked nodes it moves to the smallest number. The robot always trys to
+     turn right */
+
+//navigate
+int navigate(){
+
+    //Start Position
+    int startX, startY;
+
+    for(int x=0; x < Xsize; x++){ //Finds start position
+        for(int y=0; y < Ysize; y++){
+
+            if(map[x][y] == START){
+                startX = x;
+                startY = y;
+            }//End of if
+
+        }//End of for
+
+    }//End of for
+
+    //Declarations
+    int currentX = startX;
+    int currentY = startY;
+    int currentFacing = 0;
+    int nextDirection = 0;
+    int objectsFound = 0;
+    int objectNow = 0;
+    int mine;
+    int numbered = 1;
+    int smallest;
+
+    while(objectsFound != 2){
+
+        nextDirection = currentFacing;
+        int nextX = 0;
+        int nextY = 0;
+
+        //If an object is sensed that the map records it as a 900(Goal) & exits function
+        objectsFound = objectSensed(currentFacing, objectsFound, currentX, currentY);
+
+        if(objectsFound == 2){
+            continue;
+        }//End if
+
+        switch(currentFacing){
+            /*-----------------------CASE 0-----------------------*/
+            case 0:
+            //Checks for free blocks
+            if(map[currentX-1][currentY] == UNKNOWN){ //Is Right space unchecked
+                nextX = currentX-1;
+                nextY = currentY;
+                nextDirection = 3;
+            }else if(map[currentX][currentY-1] == UNKNOWN){ //Is Striaght space unchecked (0 = South)
+                nextX = currentX;
+                nextY = currentY-1;
+                nextDirection = 0;
+            }else if(map[currentX+1][currentY] == UNKNOWN){ //Is North space unchecked (2 = )
+                nextX = currentX+1;
+                nextY = currentY;
+                nextDirection = 1;
+            }else if(map[currentX][currentY+1] == UNKNOWN){ //Is East space unchecked (3 = East)
+                nextX = currentX;
+                nextY = currentY+1;
+                nextDirection = 2;
+            }else{ //No new spaces. Time to back track
+                smallest = map[currentX-1][currentY];
+                nextX = currentX-1;
+                nextY = currentY;
+                nextDirection = 3;
+
+                if(map[currentX][currentY-1] < smallest){
+                    smallest = map[currentX][currentY-1];
+                    nextX = currentX;
+                    nextY = currentY-1;
+                    nextDirection = 0;
+                }//End of if
+
+                if(map[currentX+1][currentY] < smallest){
+                    smallest = map[currentX+1][currentY];
+                    nextX = currentX+1;
+                    nextY = currentY;
+                    nextDirection = 1;
+                }//End of if
+
+                if(map[currentX][currentY+1] < smallest){
+                    smallest = map[currentX][currentY+1];
+                    nextX = currentX;
+                    nextY = currentY+1;
+                    nextDirection = 2;
+                }//End of if
+
+            }//End of if
+            break;
+
+            /*-----------------------CASE 1-----------------------*/
+            case 1:
+            //Checks for free blocks
+            if(map[currentX][currentY-1] == UNKNOWN){ //Is North space unchecked (0 = South)
+                nextX = currentX;
+                nextY = currentY-1;
+                nextDirection = 0;
+            }else if(map[currentX+1][currentY] == UNKNOWN){ //Is West space unchecked (1 = West)
+                nextX = currentX+1;
+                nextY = currentY;
+                nextDirection = 1;
+            }else if(map[currentX][currentY+1] == UNKNOWN){ //Is North space unchecked (2 = North)
+                nextX = currentX;
+                nextY = currentY+1;
+                nextDirection = 2;
+            }else if(map[currentX-1][currentY] == UNKNOWN){ //Is East space unchecked (3 = East)
+                nextX = currentX-1;
+                nextY = currentY;
+                nextDirection = 3;
+            }else{ //No new spaces. Time to back trcak
+
+                smallest = map[currentX][currentY-1];
+                nextX = currentX;
+                nextY = currentY-1;
+                nextDirection = 0;
+
+                if(map[currentX+1][currentY] < smallest){
+                    smallest = map[currentX+1][currentY];
+                    nextX = currentX+1;
+                    nextY = currentY;
+                    nextDirection = 1;
+                }//End of if
+
+                if(map[currentX][currentY+1] < smallest){
+                    smallest = map[currentX][currentY+1];
+                    nextX = currentX;
+                    nextY = currentY+1;
+                    nextDirection = 2;
+                }//End of if
+
+                if(map[currentX-1][currentY] < smallest){
+                    smallest = map[currentX-1][currentY];
+                    nextX = currentX-1;
+                    nextY = currentY;
+                    nextDirection = 3;
+                }//End of if
+
+            }//End of if
+            break;
+
+            /*-----------------------CASE 2-----------------------*/
+            case 2:
+            //Checks for free blocks
+            if(map[currentX+1][currentY] == UNKNOWN){ //Is North space unchecked (0 = South)
+                nextX = currentX+1;
+                nextY = currentY;
+                nextDirection = 1;
+            }else if(map[currentX][currentY+1] == UNKNOWN){ //Is West space unchecked (1 = West)
+                nextX = currentX;
+                nextY = currentY+1;
+                nextDirection = 2;
+            }else if(map[currentX-1][currentY] == UNKNOWN){ //Is North space unchecked (2 = North)
+                nextX = currentX-1;
+                nextY = currentY;
+                nextDirection = 3;
+            }else if(map[currentX][currentY-1] == UNKNOWN){ //Is East space unchecked (3 = East)
+                nextX = currentX;
+                nextY = currentY-1;
+                nextDirection = 0;
+            }else{ //No new spaces. Time to back trcak
+                smallest = map[currentX+1][currentY];
+                nextX = currentX+1;
+                nextY = currentY;
+                nextDirection = 1;
+
+                if(map[currentX][currentY+1] < smallest){
+                    smallest = map[currentX][currentY+1];
+                    nextX = currentX;
+                    nextY = currentY+1;
+                    nextDirection = 2;
+                }//End of if
+
+                if(map[currentX-1][currentY] < smallest){
+                    smallest = map[currentX-1][currentY];
+                    nextX = currentX-1;
+                    nextY = currentY;
+                    nextDirection = 3;
+                }//End of if
+
+                if(map[currentX][currentY-1] < smallest){
+                    smallest = map[currentX][currentY-1];
+                    nextX = currentX;
+                    nextY = currentY-1;
+                    nextDirection = 0;
+                }//End of if
+
+            }//End of if
+            break;
+
+            /*-----------------------CASE 3-----------------------*/
+            case 3:
+            //Checks for free blocks
+            if(map[currentX][currentY+1] == UNKNOWN){ //Is North space unchecked (0 = South)
+                nextX = currentX;
+                nextY = currentY+1;
+                nextDirection = 2;
+            }else if(map[currentX-1][currentY] == UNKNOWN){ //Is West space unchecked (1 = West)
+                nextX = currentX-1;
+                nextY = currentY;
+                nextDirection = 3;
+            }else if(map[currentX][currentY-1] == UNKNOWN){ //Is North space unchecked (2 = North)
+                nextX = currentX;
+                nextY = currentY-1;
+                nextDirection = 0;
+            }else if(map[currentX+1][currentY] == UNKNOWN){ //Is East space unchecked (3 = East)
+                nextX = currentX+1;
+                nextY = currentY;
+                nextDirection = 1;
+            }else{ //No new spaces. Time to back trcak
+
+                smallest = map[currentX][currentY+1];
+                nextX = currentX;
+                nextY = currentY+1;
+                nextDirection = 2;
+
+                if(map[currentX-1][currentY] < smallest){
+                    smallest = map[currentX-1][currentY];
+                    nextX = currentX-1;
+                    nextY = currentY;
+                    nextDirection = 3;
+                }//End of if
+
+                if(map[currentX][currentY-1] < smallest){
+                    smallest = map[currentX][currentY-1];
+                    nextX = currentX;
+                    nextY = currentY-1;
+                    nextDirection = 0;
+                }//End of if
+
+                if(map[currentX+1][currentY] < smallest){
+                    smallest = map[currentX+1][currentY];
+                    nextX = currentX+1;
+                    nextY = currentY;
+                    nextDirection = 1;
+                }//End of if
+
+            }//End of if
+            break;
+
+        }//End of switch
+
+        //Finds the direction the robot should be facing
+        currentFacing = direction(currentFacing, nextDirection);
+
+        //If an object is sensed th the map records it as a 900(Goal)
+        objectNow = objectSensed(currentFacing, objectNow, currentX, currentY);
+
+        if(objectNow > 0){
+            objectNow--;
+            continue;
+        }//End of if
+
+        if(objectsFound == 2){
+            continue;
+        }//End of if
+
+        //Moves the Robot forward one block
+        mine = moveForward(1);
+
+        if(mine == 1){
+            map[nextX][nextY] = MINE;
+            PlaySoundFile("dog_ruff.rso");
+            wait1Msec(300);
+        }else{
+            //Updates current location
+            currentX = nextX;
+            currentY = nextY;
+            map[currentX][currentY] = numbered;
+            numbered++;
+        }//End of if
+
+        printWavefrontMap();
+        wait1Msec(500);
+
+    }//End of while
+
+    map[currentX][currentY] = 888;
+    return currentFacing;
+
+}//End of navigate
+
+//----------------------------------------------------------------------------------------------------------------------
+
+/* Homeward uses the Pythagorean theorem to figure out the angle and distance it needs to travel back to
+	 the start position*/
+
+//homeward Algorithm
+int homeward(int directionFacing){
+
+    //Declarations
+    int y, x;
+    int xStart, yStart;
+    int xRobot, yRobot;
+    int yDiff = 0;
+    int xDiff = 0;
+    float angle, hypo;
+    unsigned long adj, opp, hyposquared;
+
+    //Clears the old map
+	for(x=0;x<Xsize;x++)
+		{
+		for(y=0;y<Ysize;y++)
+			{
+				if(map[x][y] == UNKNOWN){
+					map[x][y] = MINE;
+				}else if(map[x][y] > UNKNOWN && map[x][y] < GOAL){
+					map[x][y] = 0;
+				}else if(map[x][y] == START){
+					map[x][y] = 2;
+				}
+			}
+  	}
+
+
+    //Finds the Robots Position
+    for(x=0; x < Xsize; x++){ //Finds start position
+
+        for(y=0; y < Ysize; y++){
+
+            if(map[x][y] == ROBOT){
+                xRobot = x;
+                yRobot = y;
+            }//End of if
+
+        }//End of for
+
+    }//End of for
+
+    //Finds the Start Position
+    for(x=0; x < Xsize; x++){ //Finds start position
+
+        for(y=0; y < Ysize; y++){
+
+            if(map[x][y] == 2){
+                xStart = x;
+                yStart = y;
+            }//End of if
+
+        }//End of for
+
+    }//End of for
+
+    //Turns to start direction
+  directionFacing = direction(directionFacing, 3);
+
+        //Calculate Opposite and Adjacent
+        yDiff = yRobot > yStart? yRobot-yStart:yStart-yRobot;
+        xDiff = xRobot > xStart? xRobot-xStart:xStart-xRobot;
+        x = (yDiff) * 270;
+        y = (xDiff) * 270;
+        adj = x;
+        opp = y;
+        hyposquared = (opp * opp) + (adj * adj);
+        hypo = sqrt(hyposquared);
+
+				//If the y postition is 4 the robot just needs to travel staight
+        if(yRobot == 4){
+        	move(xDiff);
+        }else if(xRobot == 1){		//If the x position is 1 the robot will travel North
+        	directionFacing = direction(directionFacing, 0);
+        	move(yDiff);
+        }else{
+
+        //Calculates the angle needed
+        angle = atan2(adj, opp)*(180/3.14);
+
+        //Complete turn is 358. 358 is 1.98 times the size of 180
+        angle = angle*1.98;
+
+        if(yRobot > 4){
+        	leftTurn(angle);
+        }else{
+        	rightTurn(angle);
+        }//End of if
+
+        move ((hypo/270));
+
+        if(yRobot > 4){
+        	rightTurn(angle);
+        }else{
+        	leftTurn(angle);
+        }//End of if
+      }
+    printWavefrontMap();
+
+
+    return directionFacing;
+
+}//End of wavefront
+
+//----------------------------------------------------------------------------------------------------------------------
+
+/* FinalBlock uses the Pythagorean theorem to figure out which block is closer and at what angle to travel */
+
+//finalBlock
+void finalBlock(int currentFace){
+
+    //Declarations
+    int Sx, Sy;
+    int x, y, x2, y2, x3, y3;
+    int closeX = 0;
+    int closeY = 0;
+    int diff = 0;
+    unsigned long len1, len2;
+    int diffY = 0;
+    int diffX = 0;
+    int hypo1, hypo2;
+    unsigned long adj, opp, hyposquared;
+    float angle;
+
+    //Finds the Start Position
+    for(x=0; x < Xsize; x++){ //Finds start position
+
+        for(y=0; y < Ysize; y++){
+
+            if(map[x][y] == 2){
+                Sx = x;
+                Sy = y;
+            }//End of if
+
+        }//End of for
+
+    }//End of for
+
+    //Find Goals
+    for(x=0; x < Xsize; x++){
+
+        for(y=0; y < Ysize; y++){
+
+            if(map[x][y] == GOAL){
+
+                if(diff == 0){
+                	x2 = x;
+                	y2 = y;
+                	diff++;
+                }else{
+              		x3 = x;
+                	y3 = y;
+                }//End of if
+
+            }//End of if
+
+        }//End of for
+
+    }//End of for
+
+    //Find out hypotenuse of first GOAL
+    diffY = y2 > Sy? (y2-Sy):(Sy-y2);
+    diffX = x2 > Sx? (x2-Sx):(Sx-x2);
+    len1 = diffY * 270;
+    len2 = diffX * 270;
+    hyposquared = (len1 * len1) + (len2 * len2);
+    hypo1 = sqrt(hyposquared);
+
+    //Find out hypotenuse of second GOAL
+    diffY = y3 > Sy? (y3-Sy):(Sy-y3);
+    diffX = x3 > Sx? (x3-Sx):(Sx-x3);
+    len1 = diffY * 270;
+    len2 = diffX * 270;
+    hyposquared = (len1 * len1) + (len2 * len2);
+    hypo2 = sqrt(hyposquared);
+
+    //Find the closest GOAL
+    if(hypo1>hypo2){
+    	closeX = x3;
+    	closeY = y3;
+    }else{
+    	closeX = x2;
+    	closeY = y2;
+    }//End of if
+
+    //Turn to West direction
+    currentFace = direction(currentFace, 1);
+
+    if(closeX == 1 && closeY > 4){
+        //Turn to North direction
+        currentFace = direction(currentFace, 2);
+    }else if(closeX == 1 && closeY < 4){
+        //Turn to South direction
+        currentFace = direction(currentFace, 0);
+    }else if(closeY == 4){
+        //Turn to East direction
+        currentFace = direction(currentFace, 1);
+    }else{
+        //Calculate Opposite and Adjacent
+        diffY = closeY > Sy? closeY-Sy:Sy-closeY;
+        diffX = closeX > Sx? closeX-Sx:Sx-closeX;
+        x = diffX * 270;
+        y = diffY * 270;
+        adj = y;
+        opp = x;
+
+
+        angle = (atan2(adj, opp)*180)/3.14;
+
+
+        angle = angle*1.98;
+
+        if(closeY > 4){
+        	leftTurn(angle);
+        }else{
+        	rightTurn(angle);
+        }//End of if
+
+        printWavefrontMap();
+
+    }//End of if
+
+    while(SensorValue(sonarSensor) > 30 || SensorValue(sonarSensor) < 10){
+        move(1);
+    }//End of while
+
+}//End of finalBlock
